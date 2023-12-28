@@ -1,0 +1,41 @@
+/* * {
+    box-sizing: border-box; 
+    outline: 1px dotted red;
+} */
+
+header {
+    padding: 20px;
+    text-transform: uppercase;
+    color: whitesmoke;
+    font-weight: 100;
+    font-size: 25pt;
+    text-align: center;    
+}
+
+body {
+    background: rgb(0,0,0);
+}
+
+#search-form {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+#search-input {
+    padding: 5px;
+    height: 40px;
+    width: 5in;
+    text-align: center;
+}
+
+#search-button {
+    background: none;
+    border-style: none;
+}
+
+.icons {
+    height: 35px;
+}
+
+
