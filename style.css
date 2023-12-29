@@ -1,31 +1,37 @@
-/* * {
+* {
     box-sizing: border-box; 
     outline: 1px dotted red;
-} */
+}
 
 header {
-    padding: 20px;
+    padding: 30px;
     text-transform: uppercase;
     color: whitesmoke;
     font-weight: 100;
     font-size: 25pt;
-    text-align: center;    
+    text-align: center; 
 }
 
 body {
     background: rgb(0,0,0);
+    display: block;
+}
+
+#top-half {
+    display: block;
 }
 
 #search-form {
     display: flex;
     justify-content: center;
     gap: 5px;
+    margin-top: 20px;
 }
 
 #search-input {
     padding: 5px;
     height: 40px;
-    width: 5in;
+    width: 7in;
     text-align: center;
 }
 
@@ -36,6 +42,33 @@ body {
 
 .icons {
     height: 35px;
+}
+
+#results-container {
+    display: flex;
+    justify-content: center;
+    margin: 50px;
+    gap: 15px;
+}
+
+/* CARD STYLES */
+.card {
+    width: 15in;
+}
+
+.img-name-catalog {
+    display: flex;
+    gap: 10px;
+}
+
+.photo-data {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.thumbnail img {
+    height: 60px;
 }
 
 

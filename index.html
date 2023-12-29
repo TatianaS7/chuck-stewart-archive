@@ -20,11 +20,16 @@
 </header>
 
 <body>
+    <div id="top-half">
+        <form id="search-form">
+            <input id="search-input" name="search-input" placeholder="Artist, Date, Year, Location, Instrument, Size">
+            <button type="submit" id="search-button"><img src="images/search.png" alt="search-button" class="icons"</button>
+        </form>
+    </div>
     
-    <form id="search-form">
-        <input id="search-input" name="search-input" placeholder="Artist, Date, Year, Location, Instrument, Size">
-        <button type="submit" id="search-button"><img src="images/search.png" alt="search-button" class="icons"</button>
-    </form>
-    
+    <div id="bottom-half">
+        <div id="results-container"></div>
+    </div>
+    <script src="script.js"></script>    
 </body>
 </html>
