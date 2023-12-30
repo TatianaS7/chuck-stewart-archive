@@ -1,7 +1,7 @@
-* {
+/* * {
     box-sizing: border-box; 
     outline: 1px dotted red;
-}
+} */
 
 header {
     padding: 30px;
@@ -42,6 +42,15 @@ body {
 
 .icons {
     height: 35px;
+}
+
+#sign-in {
+    text-align: center;
+}
+
+#sign-in a {
+    color: gray;
+    font-weight: 400;
 }
 
 #results-container {
