@@ -32,6 +32,8 @@
         <button type="button" id="toggle-search-database">Search Database</button>
     </div>
 
+    <div id="new-record-status"></div>
+
     <div id="search-database-div">
 
         <div id="searchDBcontent" style="display: none;">
@@ -51,6 +53,7 @@
 
         <form id="add-records-form"">
             <div id="flex-container">
+                
                 <div id="left-side">
                     <label for="status">Status</label><br>
                     <select id="status-dropdown">
@@ -73,7 +76,7 @@
             
                 </div>
                 <div id="right-side">
-                    <label for="location">Location:</label><br>
+                    <br><label for="location">Location:</label><br>
                     <input type="text" id="location" name="location"><br>
 
                     <label for="size">Size:</label><br>
@@ -91,7 +94,6 @@
             </div>
         </form>
 
-        <div id="new-record-status"></div>
  
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="script.js"></script>    

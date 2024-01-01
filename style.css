@@ -32,7 +32,7 @@ body {
 #search-input {
     padding: 5px;
     height: 40px;
-    width: 7in;
+    min-width: 7in;
     text-align: center;
 }
 
@@ -71,7 +71,7 @@ body {
 #navbar {
     display: flex;
     justify-content: right;
-    margin: 20px 20px 5px 20px;
+    margin: 20px 40px 5px 20px;
 }
 
 #sign-out-btn {
@@ -81,7 +81,7 @@ body {
 }
 
 #sign-out-btn img {
-    height: 30px;
+    height: 25px;
 }
 
 
@@ -95,9 +95,18 @@ body {
     gap: 15px;
 }
 
+#new-record-status {
+    display: flex;
+    color: rgb(129, 2, 2);
+    font-weight: 500;
+    justify-content: center;
+    margin-top: 30px;
+}
+
 /* CARD STYLES */
 .card {
-    min-width: fit-content;
+    min-width: 4.5in;
+    max-width: 10in;
     padding: 15px;
 }
 
@@ -137,14 +146,15 @@ body {
     margin: 30px 50px 30px 50px;
 }
 
-#add-records-form input, #status, textarea {
+#add-records-form input, textarea {
     padding: 7px;
-    max-width: 4in;
+    min-width: 4in;
+    max-width: 5in;
     border-radius: 5px;
     margin: 5px;
 }
 
-#status {
+#status-dropdown {
     padding: 7px;
     width: 1.5in;
     border-radius: 5px;
