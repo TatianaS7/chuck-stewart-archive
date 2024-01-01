@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "env.default"});
 const express = require("express");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal Server Error" });
 });
+
 
 //Get Record from Databae
 app.get("/api/database/search", async (req, res) => {
@@ -38,25 +40,26 @@ app.get("/api/database/search", async (req, res) => {
     }
 });
 
-
 //Add Record to Database
 app.post("/api/database/new", async (req,res) => {
-    const { catalog_number, artist, year, location, size, instrument, status, notes } = req.body;
+    const { catalog_number, artist, year, location, size, instrument, status, notes, date_sold, image } = req.body;
 
     try {
         const insertRecord = 
-        `INSERT INTO prints (catalog_number, artist, year, location, size, instrument, status, notes)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        `INSERT INTO prints (catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
         await pool.query(insertRecord, [
             catalog_number,
             artist,
+            image,
             year,
             location,
             size,
             instrument,
             status,
-            notes
+            notes,
+            date_sold,
         ]);
         res.status(200).json({ message: "Record added!"});
     } catch (error) {
@@ -64,6 +67,36 @@ app.post("/api/database/new", async (req,res) => {
         res.status(500).json({ error: "Internal Server Error" })
     }
 });
+
+//Update Record
+app.put("/api/database/update/:id", async (req, res) => {
+    const printId = req.params.idprints;
+
+    const { catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold } = req.body;
+
+    try {
+        updateRecord = `
+        "UPDATE prints 
+        SET catalog_number = ?, 
+            artist = ?, 
+            image = ?, 
+            year = ?, 
+            location = ?, 
+            size = ?, 
+            instrument = ?, 
+            status = ?, 
+            notes = ?, 
+            date_sold = ? 
+        WHERE idprints = ?`;
+
+        await pool.query(updateRecord, [catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold, printId]);
+        
+        res.status(200).json({ message: "Record updated!" });
+    } catch (error) {
+      console.error("Error updating record:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
 
 
 
