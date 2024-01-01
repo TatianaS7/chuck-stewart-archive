@@ -28,11 +28,11 @@
         <button type="button" id="toggle-add-records">Add Records</button>
     </div>
 
-    <div id="search-database-div">
+    <div id="search-db-button">
+        <button type="button" id="toggle-search-database">Search Database</button>
+    </div>
 
-        <div id="search-db-button">
-            <button type="button" id="toggle-search-database">Search Database</button>
-        </div>
+    <div id="search-database-div">
 
         <div id="searchDBcontent" style="display: none;">
             <div id="top-half">
@@ -60,13 +60,13 @@
                       </select><br><hr>
 
                     <label for="catalog_number">Catalog #:</label><br>
-                    <input type="number" id="catalog_number" name="catalog_number" required><br>
+                    <input type="text" id="catalog_number" name="catalog_number" required><br>
 
                     <label for="artist">Artist(s):</label><br>
                     <input type="text" id="artist" name="artist" required><br>
 
                     <label for="year">Year:</label><br>
-                    <input type="number" id="year" name="year" required><br>
+                    <input type="text" id="year" name="year" required><br>
 
                     <label for="">Image:</label><br>
                     <input type="url" id="image" name="image" required><br>
@@ -90,6 +90,8 @@
                 <button type="submit" id="submit-record-btn" class="btn btn-outline-light">Submit</button>
             </div>
         </form>
+
+        <div id="new-record-status"></div>
  
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="script.js"></script>    

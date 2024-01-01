@@ -98,6 +98,8 @@ function toggleNewRecords() {
 addRecordsBtn.addEventListener("click", toggleNewRecords);
 
 //Add New Records
+const resultContainer = document.querySelector("#new-record-status");
+
 const statusDropdown = document.querySelector("#status-dropdown");
 const printCatalogNumber = document.querySelector("#catalog_number");
 const printArtist = document.querySelector("#artist");
@@ -123,11 +125,15 @@ function submitForm() {
             notes: printNotes.value,
         };
         insertRecord(printData);
-    }
+    };
+
     addRecordsForm.addEventListener('submit', function(event) {
         event.preventDefault();
         submitForm();
-});
+
+        addRecordsForm.style.display = "none";
+    });
+
 
 function insertRecord(printData) {
     const options = {
@@ -140,6 +146,12 @@ function insertRecord(printData) {
     fetch(apiBaseUrl + "/api/database/new", options)
         .then((response) => response.json())
         .then((data) => {
+            if(data.message = "Record Added!") {
+                resultContainer.innerHTML = "Record Successfully Added!";
+            } else if(data.message = "This is a Duplicate Entry") {
+                resultContainer.innerHTML = "Duplicate Entry.";
+            }
+
             console.log(data);
         })
         .catch((error) => {

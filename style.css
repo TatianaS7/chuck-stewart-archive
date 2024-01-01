@@ -89,6 +89,7 @@ body {
 /* RESULTS CONTAINER STYLES */
 #results-container {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     margin: 50px;
     gap: 15px;
@@ -96,7 +97,7 @@ body {
 
 /* CARD STYLES */
 .card {
-    width: 15in;
+    min-width: fit-content;
     padding: 15px;
 }
 
@@ -138,7 +139,7 @@ body {
 
 #add-records-form input, #status, textarea {
     padding: 7px;
-    width: 4in;
+    max-width: 4in;
     border-radius: 5px;
     margin: 5px;
 }

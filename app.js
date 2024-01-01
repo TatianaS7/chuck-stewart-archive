@@ -45,6 +45,16 @@ app.post("/api/database/new", async (req,res) => {
     const { catalog_number, artist, year, location, size, instrument, status, notes, date_sold, image } = req.body;
 
     try {
+        const checkExistingRecord =
+        `SELECT * FROM prints 
+        WHERE catalog_number LIKE ?`;
+
+        [check] = await pool.query(checkExistingRecord, [catalog_number]);
+
+        if (check.length > 0) {
+            res.status(400).json({ message: "This is a Duplicate Entry" })
+
+        } else {
         const insertRecord = 
         `INSERT INTO prints (catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -62,6 +72,7 @@ app.post("/api/database/new", async (req,res) => {
             date_sold,
         ]);
         res.status(200).json({ message: "Record added!"});
+        }
     } catch (error) {
         console.error("Error adding record:", error);
         res.status(500).json({ error: "Internal Server Error" })
