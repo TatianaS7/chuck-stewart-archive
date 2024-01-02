@@ -81,6 +81,7 @@ const searchDBcontent = document.querySelector("#searchDBcontent");
 function toggleSearchDB() {
     searchDBcontent.style.display = 'block';
     addRecordsForm.style.display = 'none';
+    recordActionContainer.style.display = 'none';
 }
 
 searchDatabaseBtn.addEventListener("click", toggleSearchDB);
@@ -93,6 +94,8 @@ const addRecordsForm = document.querySelector("#add-records-form");
 function toggleNewRecords() {
     addRecordsForm.style.display = 'block';
     searchDBcontent.style.display = 'none';
+    recordActionContainer.innerHTML ="";
+    recordActionContainer.style.display = 'block';
 }
 
 addRecordsBtn.addEventListener("click", toggleNewRecords);
@@ -149,8 +152,9 @@ function insertRecord(printData) {
                 recordActionContainer.style.color = "green";
                 addRecordsForm.style.display = "none";
             } else if(data.message === "This is a Duplicate Entry") {
-                recordActionContainer.innerHTML = "Duplicate Entry.";
+                recordActionContainer.innerHTML += "Duplicate Entry.";
                 addRecordsForm.style.display = "block";
+                recordActionContainer.style.color = "rgb(129, 2, 2)";
             }
 
             console.log(data);

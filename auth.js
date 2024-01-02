@@ -25,8 +25,11 @@ signInButton.addEventListener("click", function(event) {
 });
 
 //Sign Out User
-signOutButton.addEventListener("click", function() {
-    signOut(auth).then(() => {
+signOutButton.addEventListener('click', function() {
+    console.log("User Signed Out");
+
+    signOut(auth)
+        .then(() => {
         window.location.assign("/login.html");
       })
       .catch((error) => {

@@ -71,7 +71,7 @@ app.post("/api/database/new", async (req,res) => {
             notes,
             date_sold,
         ]);
-        res.status(200).json({ message: "Record added!"});
+        res.status(200).json({ message: "Record Added!"});
         }
     } catch (error) {
         console.error("Error adding record:", error);
