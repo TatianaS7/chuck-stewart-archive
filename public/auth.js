@@ -1,4 +1,4 @@
-import { auth, signInWithEmailAndPassword, signOut } from "./firebase-config.js";
+import { auth, signInWithEmailAndPassword, signOut } from "../firebase-config.js";
 
 const emailInput = document.querySelector("#email");
 const passwordInput = document.querySelector("#password");
