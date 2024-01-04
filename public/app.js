@@ -1,4 +1,4 @@
-const pool = require("../dbConfig");
+const pool = require("./dbConfig");
 const dotenv = require("dotenv");
 dotenv.config({ path: "env.default"});
 const express = require("express");
