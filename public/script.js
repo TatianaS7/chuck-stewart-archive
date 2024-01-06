@@ -38,14 +38,14 @@ function searchDatabase(query) {
                         </div>
                         <div class="photo-data">
                             <div class="left-side">
-                                <p class="card-text">Size: ${record.size}</p>
-                                <p class="card-text">Year: ${record.year}</p>
-                                <p class="card-text">Location: ${record.location || null}</p>
-                                <p class="card-text">Instrument: ${record.instrument || null}</p>
+                                <p class="card-text"><b>Size:</b> ${record.size}</p>
+                                <p class="card-text"><b>Year:</b> ${record.year}</p>
+                                <p class="card-text"><b>Location:</b> ${record.location || ""}</p>
+                                <p class="card-text"><b>Instrument:</b> ${record.instrument || ""}</p>
                             </div>
                             <div class="right-side">
-                                <p class="card-text">Status: ${record.status}</p>
-                                <p class="card-text">Notes: ${record.notes || null}</p>
+                                <p class="card-text"><b>Status:</b> ${record.status}</p>
+                                <p class="card-text"><b>Notes:</b> ${record.notes || ""}</p>
                             </div>
                         </div>
                     </div>
