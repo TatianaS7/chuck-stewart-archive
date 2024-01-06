@@ -16,6 +16,7 @@ header, header a {
 body {
     background: rgb(0,0,0);
     display: block;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 #top-half {
