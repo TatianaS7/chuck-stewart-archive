@@ -19,6 +19,12 @@
     },
     "singleProjectMode": true
   },
+  "rewrites": [
+    {
+      "source": "**",
+      "destination": "/index.html"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
