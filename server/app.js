@@ -8,6 +8,11 @@ const cors = require("cors");
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.get("/", (req, res) => {
+    // Redirect to the login.html page
+    res.redirect("/login.html");
+  });
+
 
 app.use(cors({ origin: 'https://chuck-stewart-archive.web.app' }));
 
@@ -18,10 +23,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error", message: err.message });
 });
 
-app.get("/", (req, res) => {
-    // Redirect to the login.html page
-    res.redirect("/login.html");
-  });
 
 //Get Record from Databae
 app.get("/api/database/search", async (req, res) => {
