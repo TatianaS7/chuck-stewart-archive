@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors({ origin: 'https://chuck-stewart-archive.firebaseapp.com' }));
+app.use(cors({ origin: 'https://chuck-stewart-archive.firebaseapp.com' || 'https://chuck-stewart-archive.web.app/' }));
 
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
