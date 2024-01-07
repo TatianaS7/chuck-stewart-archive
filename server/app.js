@@ -20,7 +20,7 @@ app.use((err, req, res, next) => {
 
 app.get("/", (req, res) => {
     // Redirect to the login.html page
-    res.redirect("/login.html");
+    res.redirect("/public/login.html");
   });
 
 //Get Record from Databae
