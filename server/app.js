@@ -15,12 +15,12 @@ app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Internal Server Error" });
+  res.status(500).json({ error: "Internal Server Error", message: err.message });
 });
 
 app.get("/", (req, res) => {
     // Redirect to the login.html page
-    res.redirect("/public/login.html");
+    res.redirect("/login.html");
   });
 
 //Get Record from Databae
