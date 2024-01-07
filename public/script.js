@@ -1,5 +1,5 @@
 // const apiBaseUrl = "http://localhost:5501";
-const apiBaseUrl = "https://git.heroku.com/chuck-stewart-archive.git";
+const apiBaseUrl = "https://chuck-stewart-archive.herokuapp.com";
 
 //Search Database
 document.addEventListener('DOMContentLoaded', function() {

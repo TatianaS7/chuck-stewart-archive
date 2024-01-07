@@ -1,12 +1,12 @@
 const pool = require("./dbConfig");
 const dotenv = require("dotenv");
-dotenv.config({ path: "./env.default"});
+dotenv.config({ path: "./env.default" });
 const express = require("express");
 const cors = require("cors");
 
 const app = express();
 
-app.use(cors({ origin: 'https://chuck-stewart-archive.firebaseapp.com' || 'https://chuck-stewart-archive.web.app/' }));
+app.use(cors({ origin: 'https://chuck-stewart-archive.web.app' }));
 
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
