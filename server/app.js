@@ -18,6 +18,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
+app.get("/", (req, res) => {
+    // Redirect to the login.html page
+    res.redirect("/login.html");
+  });
 
 //Get Record from Databae
 app.get("/api/database/search", async (req, res) => {
