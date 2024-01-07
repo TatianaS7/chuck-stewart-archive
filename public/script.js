@@ -1,5 +1,5 @@
 // const apiBaseUrl = "http://localhost:5501";
-const apiBaseUrl = "https://chuck-stewart-archive.web.app/";
+const apiBaseUrl = "https://chuck-stewart-archive.web.app";
 
 //Search Database
 document.addEventListener('DOMContentLoaded', function() {
