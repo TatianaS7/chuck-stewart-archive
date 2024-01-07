@@ -43,7 +43,7 @@ app.get("/api/database/search", async (req, res) => {
     res.status(200).json({ search });           
     } catch (error) {
         console.error("Error fetching results:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error", message: err.message });
     }
 });
 
@@ -82,7 +82,7 @@ app.post("/api/database/new", async (req,res) => {
         }
     } catch (error) {
         console.error("Error adding record:", error);
-        res.status(500).json({ error: "Internal Server Error" })
+        res.status(500).json({ error: "Internal Server Error", message: err.message })
     }
 });
 
