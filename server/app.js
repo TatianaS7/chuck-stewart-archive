@@ -2,9 +2,12 @@ const pool = require("./dbConfig");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./env.default" });
 const express = require("express");
+const path = require('path');
 const cors = require("cors");
 
 const app = express();
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors({ origin: 'https://chuck-stewart-archive.web.app' }));
 
