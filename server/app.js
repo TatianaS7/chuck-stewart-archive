@@ -3,11 +3,11 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./env.default"});
 const express = require("express");
 const cors = require("cors");
-const bcrypt = require("bcrypt");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: 'https://chuck-stewart-archive.firebaseapp.com' }));
+
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 app.use((err, req, res, next) => {
