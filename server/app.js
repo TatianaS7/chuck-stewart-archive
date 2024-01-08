@@ -9,6 +9,8 @@ const cors = require("cors");
 
 const app = express();
 
+app.use(cors({ origin: 'https://chuck-stewart-archive.web.app' }));
+
 const dbUrl = process.env.JAWSDB_URL;
 const params = url.parse(dbUrl);
 const auth = params.auth.split(':');
@@ -26,9 +28,6 @@ app.get("/", (req, res) => {
     // Redirect to the login.html page
     res.redirect("/login.html");
   });
-
-
-app.use(cors({ origin: 'https://chuck-stewart-archive.web.app' }));
 
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
