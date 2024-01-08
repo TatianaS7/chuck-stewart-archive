@@ -136,7 +136,7 @@ app.put("/api/database/update/:id", async (req, res) => {
 
 
 // Start the server
-const PORT = process.env.PORT || 5501;
+const PORT = process.env.DB_PORT || 5501;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
