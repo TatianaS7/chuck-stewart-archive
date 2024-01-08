@@ -1,6 +1,4 @@
-// const pool = require("./dbConfig");
-const url = require('url');
-const mysql = require('mysql');
+const pool = require("./dbConfig");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./env.default" });
 const express = require("express");
@@ -11,21 +9,10 @@ const app = express();
 
 app.use(cors({ origin: 'https://chuck-stewart-archive.web.app/' }));
 
-const dbUrl = process.env.JAWSDB_URL;
-const params = url.parse(dbUrl);
-const auth = params.auth.split(':');
-
-const pool = mysql.createPool({
-    host: params.hostname,
-    user: auth[0],
-    password: auth[1],
-    database: params.pathname.split('/')[1],
-    port: params.port,
-});
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.get("/", (req, res) => {
     // Redirect to the login.html page
+    console.log("Redirecting to login.html");
     res.redirect("/login.html");
   });
 
