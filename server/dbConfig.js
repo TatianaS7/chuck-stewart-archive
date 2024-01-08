@@ -1,5 +1,7 @@
-const mysql = require('promise-mysql2');
-require('dotenv').config();
+import { createPool } from 'promise-mysql2';
+import { config } from 'dotenv';
+
+config({ path: './env.default' });
 
 const dbConfig = {
     host: process.env.DB_HOST,
@@ -13,6 +15,6 @@ const dbConfig = {
     insecureAuth: false
   };
   
-  const pool = mysql.createPool(dbConfig);
+  const pool = createPool(dbConfig);
   
-  module.exports = pool;
+  export default pool;
