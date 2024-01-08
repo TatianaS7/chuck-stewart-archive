@@ -9,7 +9,7 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: 'https://chuck-stewart-archive.web.app/' }));
 
 const dbUrl = process.env.JAWSDB_URL;
 const params = url.parse(dbUrl);
@@ -135,7 +135,7 @@ app.put("/api/database/update/:id", async (req, res) => {
 
 
 // Start the server
-const PORT = process.env.DB_PORT || 5501;
+const PORT = process.env.DB_PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
