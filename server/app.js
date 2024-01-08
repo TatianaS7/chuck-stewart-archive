@@ -9,7 +9,7 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors({ origin: 'https://chuck-stewart-archive.web.app' }));
+app.use(cors({ origin: '*' }));
 
 const dbUrl = process.env.JAWSDB_URL;
 const params = url.parse(dbUrl);
