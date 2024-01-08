@@ -109,7 +109,7 @@ app.put("/api/database/update/:id", async (req, res) => {
 
     try {
         updateRecord = `
-        "UPDATE prints 
+        UPDATE prints 
         SET catalog_number = ?, 
             artist = ?, 
             image = ?, 
