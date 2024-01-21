@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Tool for searching the archive for Chuck Stewart's photography",
   "main": "server/app.js",
-  "scripts": {
-    "start": "node server/app.js"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TatianaS7/chuck-stewart-archive.git"
