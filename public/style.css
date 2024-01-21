@@ -27,7 +27,7 @@ body {
     display: flex;
     justify-content: center;
     gap: 5px;
-    margin-top: 20px;
+    margin: 20px 20px 0 20px;
 }
 
 #search-input {

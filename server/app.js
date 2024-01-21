@@ -1,36 +1,23 @@
-// const pool = require("./dbConfig");
-const url = require('url');
-const mysql = require('mysql');
+const pool = require("./dbConfig");
 const dotenv = require("dotenv");
 dotenv.config({ path: "./env.default" });
 const express = require("express");
-const path = require('path');
+const path = require("path");
 const cors = require("cors");
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+// app.use(cors({ origin: '*' }));
 
-const dbUrl = process.env.JAWSDB_URL;
-const params = url.parse(dbUrl);
-const auth = params.auth.split(':');
+// // app.use(express.static(join(__dirname, 'public')));
+// app.get("/", (req, res) => {
+//     // Redirect to the login.html page
+//     console.log("Redirecting to login.html");
+//     res.redirect("/login.html");
+//   });
 
-const pool = mysql.createPool({
-    host: params.hostname,
-    user: auth[0],
-    password: auth[1],
-    database: params.pathname.split('/')[1],
-    port: params.port,
-});
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.get("/", (req, res) => {
-    // Redirect to the login.html page
-    res.redirect("/login.html");
-  });
-
-app.use(express.json()); // For parsing application/json
-app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
+app.use(json()); // For parsing application/json
+app.use(urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal Server Error", message: err.message });
@@ -52,7 +39,7 @@ app.get("/api/database/search", async (req, res) => {
         OR instrument LIKE ?
         OR status LIKE ?
         OR notes LIKE ?`;
-        const [search] = await pool.query(searchSql, [`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]);
+        const [search] = pool.query(searchSql, [`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]);
 
     res.status(200).json({ search });           
     } catch (error) {
@@ -70,7 +57,7 @@ app.post("/api/database/new", async (req,res) => {
         `SELECT * FROM prints 
         WHERE catalog_number LIKE ?`;
 
-        [check] = await pool.query(checkExistingRecord, [catalog_number]);
+        [check] = query(checkExistingRecord, [catalog_number]);
 
         if (check.length > 0) {
             res.status(400).json({ message: "This is a Duplicate Entry" })
@@ -80,18 +67,18 @@ app.post("/api/database/new", async (req,res) => {
         `INSERT INTO prints (catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-        await pool.query(insertRecord, [
-            catalog_number,
-            artist,
-            image,
-            year,
-            location,
-            size,
-            instrument,
-            status,
-            notes,
-            date_sold,
-        ]);
+        pool.query(insertRecord, [
+                catalog_number,
+                artist,
+                image,
+                year,
+                location,
+                size,
+                instrument,
+                status,
+                notes,
+                date_sold,
+            ]);
         res.status(200).json({ message: "Record Added!"});
         }
     } catch (error) {
@@ -121,7 +108,7 @@ app.put("/api/database/update/:id", async (req, res) => {
             date_sold = ? 
         WHERE idprints = ?`;
 
-        await pool.query(updateRecord, [catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold, printId]);
+        pool.query(updateRecord, [catalog_number, artist, image, year, location, size, instrument, status, notes, date_sold, printId]);
         
         res.status(200).json({ message: "Record updated!" });
     } catch (error) {
@@ -131,11 +118,8 @@ app.put("/api/database/update/:id", async (req, res) => {
   });
 
 
-
-
-
 // Start the server
-const PORT = process.env.DB_PORT || 5501;
+const PORT = 5501;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
