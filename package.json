@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Tool for searching the archive for Chuck Stewart's photography",
   "server": "nodemon server.js",
-  "client": "parcel public/login.html --open",
-  "start": "parcel build public/login.html && node server.js",
+  "client": "parcel public/index.html --open",
+  "start": "parcel build public/index.html && nodemon server.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TatianaS7/chuck-stewart-archive.git"
