@@ -16,7 +16,18 @@ router.get('/all', async (req, res, next) => {
 // Add a Print
 router.post('/', async (req, res, next) => {
     try {
-        const newPrint = await Print.create(req.body);
+        const newPrint = await Print.create({
+            catalog_number: req.body.catalog_number,
+            artist: req.body.artist,
+            image: req.body.image,
+            date: req.body.date,
+            location: req.body.location,
+            size: req.body.size,
+            instrument: req.body.instrument,
+            status: req.body.status,
+            notes: req.body.notes,
+            date_sold: req.body.date_sold
+        });
         res.status(200).json(newPrint);
     } catch (error) {
         next(error)
@@ -25,12 +36,22 @@ router.post('/', async (req, res, next) => {
 
 
 // Delete a Print
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:catalogNumber', async (req, res, next) => {
     try {
-      const print = await Print.findByPk(req.params.id);
+      const print = await Print.findOne({
+        where: {
+            catalog_number: req.params.catalogNumber
+        }
+      });
+
+      if (!print) {
+        res.status(404).json({ error: `No print found with catalog number ${req.params.catalogNumber}`})
+      }
+
       await print.destroy();
-      
-      res.status(200).json(Print.findAll());
+
+      const allPrints = await Print.findAll();
+      res.status(200).json({message: 'Print deleted successfully!', current_prints: allPrints});
     } catch (error) {
         next(error)
     }
@@ -38,10 +59,30 @@ router.delete('/:id', async (req, res, next) => {
 
 
 // Update a Print
-router.put('/update/:id', async (req, res, next) => {
+router.put('/update/:catalogNumber', async (req, res, next) => {
     try {
-        const print = await Print.findByPk(req.params.id);
-        await print.update(req.body);
+        const print = await Print.findOne({
+            where: {
+                catalog_number: req.params.catalogNumber
+            }
+        });
+
+        if (!print) {
+            res.status(401).json({ error: `No print found with catalog number: ${req.params.catalogNumber}`})
+        }
+
+        await print.update({
+            catalog_number: req.body.catalog_number,
+            artist: req.body.artist,
+            image: req.body.image,
+            date: req.body.date,
+            location: req.body.location,
+            size: req.body.size,
+            instrument: req.body.instrument,
+            status: req.body.status,
+            notes: req.body.notes,
+            date_sold: req.body.date_sold
+        });
 
         res.status(200).json(print);
       } catch (error) {
