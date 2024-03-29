@@ -3,22 +3,59 @@
     outline: 1px dotted red;
 } */
 
-header, header a {
-    padding: 30px;
-    text-transform: uppercase;
-    color: whitesmoke;
-    font-weight: 100;
-    font-size: 25pt;
-    text-align: center; 
-    text-decoration: none;
+
+#header-div {
+    padding: 1.5em 0;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    color: white;
 }
 
 body {
     background: rgb(0,0,0);
     display: block;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
 }
 
+#navbar {
+    display: flex;
+    justify-content: right;
+    padding: 1.5em 1.5em 0 0;
+}
+
+.view-title {
+    color: white;
+    font-weight: lighter;
+    text-align: center;
+    margin-bottom: 2em
+}
+
+
+
+/* SIGN IN STYLES */
+#admin-login {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#email, #password {
+    text-align: center;
+    padding: 5px;
+}
+
+/* SIGN OUT STYLES */
+
+#sign-out-btn {
+    display: flex;
+    justify-content: right;
+}
+
+
+
+/* SEARCH STYLES */
 #top-half {
     display: block;
 }
@@ -42,49 +79,14 @@ body {
     border-style: none;
 }
 
-.icons {
-    height: 35px;
-}
 
-/* SIGN IN STYLES */
-#admin-login {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
 
-#sign-in {
-    text-align: center;
-}
 
-#sign-in a {
-    color: gray;
-    font-weight: 400;
-    text-decoration: none;
+/* PRINTS CONTAINER */
+#prints-container {
+    margin: 2em 3em;
+    overflow-y: auto;
 }
-
-#email, #password {
-    text-align: center;
-    padding: 5px;
-}
-
-/* SIGN OUT STYLES */
-#navbar {
-    display: flex;
-    justify-content: right;
-    margin: 20px 40px 5px 20px;
-}
-
-#sign-out-btn {
-    background: none;
-    border-style: none;
-    height: 20px;
-}
-
-#sign-out-btn img {
-    height: 25px;
-}
-
 
 
 /* RESULTS CONTAINER STYLES */
@@ -105,8 +107,8 @@ body {
 
 /* CARD STYLES */
 .card {
-    min-width: 4.5in;
-    max-width: 10in;
+    width: 35em;
+    height: 20em;
     padding: 15px;
 }
 
@@ -116,10 +118,23 @@ body {
     align-items: center;
 }
 
-.photo-data {
+.data {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
+    margin-top: 1.5em;
+    overflow-y: auto;
+}
+
+.data b {
+    font-size: 13pt;
+}
+
+.data .right-side {
+    max-width: 55%;
+}
+
+.data .left-side {
+    width: 40%;
 }
 
 .thumbnail img {
