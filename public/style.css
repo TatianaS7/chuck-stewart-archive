@@ -3,7 +3,7 @@
     outline: 1px dotted red;
 } */
 
-
+/* MAIN STYLES */
 #header-div {
     padding: 1.5em 0;
     display: flex;
@@ -25,11 +25,27 @@ body {
     padding: 1.5em 1.5em 0 0;
 }
 
+
+
+/* PAGE NAME STYLES */
+#toggle-views {
+    display: flex;
+    justify-content: center;
+    gap: 1.5em;
+}
+
 .view-title {
+    background: none;
+    border: none;
     color: white;
     font-weight: lighter;
+    font-size: 16pt;
     text-align: center;
     margin-bottom: 2em
+}
+
+.view-title:focus {
+    border-bottom: white solid 1pt;
 }
 
 
@@ -46,11 +62,20 @@ body {
     padding: 5px;
 }
 
-/* SIGN OUT STYLES */
 
+
+/* SIGN OUT STYLES */
 #sign-out-btn {
     display: flex;
     justify-content: right;
+}
+
+
+
+/* PRINTS CONTAINER */
+#prints-container {
+    margin: 2em 3em;
+    overflow-y: auto;
 }
 
 
@@ -82,14 +107,9 @@ body {
 
 
 
-/* PRINTS CONTAINER */
-#prints-container {
-    margin: 2em 3em;
-    overflow-y: auto;
-}
 
 
-/* RESULTS CONTAINER STYLES */
+/* SEARCH RESULTS CONTAINER STYLES */
 #results-container {
     display: flex;
     flex-wrap: wrap;
