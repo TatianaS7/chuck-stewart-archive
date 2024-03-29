@@ -2,13 +2,9 @@ import React, {useState, useEffect} from "react";
 
 function Prints({ allPrints, isSignedIn }) {
 
-    if (isSignedIn && allPrints) {
-       console.log(allPrints); 
-    }
-
+    
     return (
         <>
-        <h4 className="view-title">All Prints</h4>
             <div id="prints-container">
 
             {isSignedIn && allPrints && 

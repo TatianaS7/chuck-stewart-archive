@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function Auth({ email, setEmail, password, setPassword, handleSignInSubmit }) {
+function Auth({ setEmail, setPassword, handleSignInSubmit }) {
     function handleEmailChange(e) {
         setEmail(e.target.value);
     }
