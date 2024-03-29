@@ -12,16 +12,19 @@ function NewPrintForm({ setNewPrintData }) {
     return (
         <>
             <form id="add-records-form">
-            <div id="flex-container">
-                
-                <div id="left-side">
-                    <label for="status">Status</label><br/>
+
+                <div id="status-fields">
+                    <label for="status">Status</label>
                     <select id="status-dropdown" name="status">
                         <option value="Available">Available</option>
                         <option value="Unavailable">Unavailable</option>
                         <option value="Sold">Sold</option>
-                    </select><br/><hr/>
+                    </select><hr/>
+                </div>
 
+            <div id="flex-container">
+
+                <div id="left-side">
                     <label for="catalog_number">Catalog #:</label><br/>
                     <input type="text" id="catalog_number" name="catalog_number" required onChange={handleFormChange}></input><br/>
 
@@ -33,14 +36,14 @@ function NewPrintForm({ setNewPrintData }) {
 
                     <label for="">Image:</label><br/>
                     <input type="url" id="image" name="image" onChange={handleFormChange}></input><br/>
-            
-                </div>
-                <div id="right-side">
-                    <br/><label for="location">Location:</label><br/>
-                    <input type="text" id="location" name="location" onChange={handleFormChange}></input><br/>
 
                     <label for="size">Size:</label><br/>
                     <input type="text" id="size" name="size" required onChange={handleFormChange}></input><br/>
+                </div>
+
+                <div id="right-side">
+                    <br/><label for="location">Location:</label><br/>
+                    <input type="text" id="location" name="location" onChange={handleFormChange}></input><br/>
 
                     <label for="instrument">Instrument:</label><br/>
                     <input type="text" id="instrument" name="instrument" onChange={handleFormChange}></input><br/><br/>
@@ -51,7 +54,9 @@ function NewPrintForm({ setNewPrintData }) {
                     <label for="date_sold">Date Sold:</label><br/>
                     <input type="text" id="date_sold" name="date_sold" onChange={handleFormChange}></input>
                 </div>
+
             </div><br/>
+
             <div id="submit-div">
                 <button type="submit" id="submit-record-btn" class="btn btn-outline-light">Submit</button>
             </div>
