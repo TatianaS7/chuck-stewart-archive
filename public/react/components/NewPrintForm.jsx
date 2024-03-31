@@ -40,7 +40,7 @@ function NewPrintForm({ setNewPrintData, addPrint }) {
 
 
                     <label htmlFor="size">Size:</label><br/>
-                    <input type="text" name="size" required onChange={handleFormChange}></input><br/>
+                    <input type="text" name="size" onChange={handleFormChange} required></input><br/>
                 </div>
 
                 <div id="right-side">

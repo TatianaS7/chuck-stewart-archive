@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Print = require('../models/print');
+const { check, validationResult } = require('express-validator')
 
 // Get All Prints
 router.get('/all', async (req, res, next) => {
@@ -14,8 +15,18 @@ router.get('/all', async (req, res, next) => {
 
 
 // Add a Print
-router.post('/', async (req, res, next) => {
-    try {
+router.post('/', [
+    check ('status').not().isEmpty().trim().withMessage('Status is Required'),
+    check('catalog_number').not().isEmpty().trim().withMessage('Catalog # is Required'),
+    check ('artist').not().isEmpty().trim().withMessage('Artist is Required'),
+    check ('size').not().isEmpty().trim().withMessage('Size is required')
+], async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        res.status(400).json({ error: errors.array() })
+    } else {
+        try {
         const newPrint = await Print.create({
             status: req.body.status,
             catalog_number: req.body.catalog_number,
@@ -29,9 +40,10 @@ router.post('/', async (req, res, next) => {
             date_sold: req.body.date_sold
         });
         res.status(200).json(newPrint);
-    } catch (error) {
-        console.error('Error adding print', error);
-        next(error)
+        } catch (error) {
+            console.error('Error adding print', error);
+            next(error)
+        }
     }
 });
 
@@ -54,6 +66,7 @@ router.delete('/:catalogNumber', async (req, res, next) => {
       const allPrints = await Print.findAll();
       res.status(200).json({message: 'Print deleted successfully!', current_prints: allPrints});
     } catch (error) {
+        console.error('Internal Server Error', error);
         next(error)
     }
 })
@@ -87,6 +100,7 @@ router.put('/update/:catalogNumber', async (req, res, next) => {
 
         res.status(200).json(print);
       } catch (error) {
+        console.error('Internal Server Error', error);
         next(error)
     }
 })
