@@ -30,6 +30,14 @@ function App() {
 
 
 
+    useEffect(() => {
+        const isAuthenticated = localStorage.getItem('isAuthenticated');
+        if (isAuthenticated) {
+            setIsSignedIn(true)
+        }
+    }, []);
+
+
     // Login Function
     async function handleSignInSubmit() {
         try {
@@ -43,11 +51,22 @@ function App() {
             if (!res.ok) {
                 throw new Error('Failed to sign in');
             }
+            localStorage.setItem('isAuthenticated', 'true');
             setIsSignedIn(true);
         } catch (error) {
             console.error('Error signing in', error)
         }
     }
+
+    // Sign Out function
+    function handleSignOut() {
+        localStorage.removeItem('isAuthenticated');
+        setEmail(null);
+        setPassword(null);
+        setIsSignedIn(false);
+    };
+    
+
 
     // Fetch All Prints Function
     async function fetchPrints() {
@@ -69,6 +88,7 @@ function App() {
     // Add New Print Function
     async function addPrint() {
         try {
+            console.log(newPrintData);
             const res = await fetch(`${apiURL}/prints`, {
                 method: 'POST',
                 headers: {
@@ -102,12 +122,6 @@ function App() {
     }
 
 
-    // Sign Out function
-    function handleSignOut() {
-        setEmail(null);
-        setPassword(null)
-        setIsSignedIn(false)
-    };
 
     // Toggle Views Functions
     function allPrintsClick() {
