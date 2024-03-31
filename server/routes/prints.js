@@ -17,19 +17,20 @@ router.get('/all', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
     try {
         const newPrint = await Print.create({
+            status: req.body.status,
             catalog_number: req.body.catalog_number,
             artist: req.body.artist,
             image: req.body.image,
             date: req.body.date,
-            location: req.body.location,
             size: req.body.size,
+            location: req.body.location,
             instrument: req.body.instrument,
-            status: req.body.status,
             notes: req.body.notes,
             date_sold: req.body.date_sold
         });
         res.status(200).json(newPrint);
     } catch (error) {
+        console.error('Error adding print', error);
         next(error)
     }
 });
@@ -72,14 +73,14 @@ router.put('/update/:catalogNumber', async (req, res, next) => {
         }
 
         await print.update({
+            status: req.body.status,
             catalog_number: req.body.catalog_number,
             artist: req.body.artist,
             image: req.body.image,
             date: req.body.date,
-            location: req.body.location,
             size: req.body.size,
+            location: req.body.location,
             instrument: req.body.instrument,
-            status: req.body.status,
             notes: req.body.notes,
             date_sold: req.body.date_sold
         });

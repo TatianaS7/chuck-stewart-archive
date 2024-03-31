@@ -3,6 +3,12 @@ const { db, Model, DataTypes } = require('../db/connection');
 class Print extends Model {};
 
 Print.init({
+    "status": {
+        type: DataTypes.ENUM,
+        values: ["Available", "Sold", "Unavailable"],
+        defaultValue: 'Available',
+        allowNull: false
+    },
     "catalog_number": {
         type: DataTypes.STRING,
         allowNull: false
@@ -17,10 +23,6 @@ Print.init({
     },
     "date": {
         type: DataTypes.STRING,
-        allowNull: false
-    },
-    "location": {
-        type: DataTypes.STRING,
         allowNull: true
     },
     "size": {
@@ -28,14 +30,13 @@ Print.init({
         values: ["11x14", "16x20", "11x14C"],
         allowNull: false
     },
-    "instrument": {
+    "location": {
         type: DataTypes.STRING,
         allowNull: true
     },
-    "status": {
-        type: DataTypes.ENUM,
-        values: ["Available", "Sold", "Unavailable"],
-        allowNull: false
+    "instrument": {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     "notes": {
         type: DataTypes.STRING,

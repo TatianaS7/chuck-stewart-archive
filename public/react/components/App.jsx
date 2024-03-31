@@ -16,17 +16,18 @@ function App() {
 
     const [allPrints, setAllPrints] = useState([]);
     const [newPrintData, setNewPrintData] = useState([{
+        status: '',
         catalog_number: '',
         artist: '',
         image: null,
         date: '',
-        location: null,
         size: '',
+        location: null,
         instrument: null,
-        status: '',
         notes: null,
         date_sold: null
     }]);
+
 
 
     // Login Function
@@ -43,7 +44,6 @@ function App() {
                 throw new Error('Failed to sign in');
             }
             setIsSignedIn(true);
-            setLoginView(false)
         } catch (error) {
             console.error('Error signing in', error)
         }
@@ -61,10 +61,45 @@ function App() {
                 
             setAllPrints(printData)
         } catch (error) {
-            console.error('Error fetching prints')
+            console.error('Error fetching prints', error)
         }
     }
 
+
+    // Add New Print Function
+    async function addPrint() {
+        try {
+            const res = await fetch(`${apiURL}/prints`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newPrintData)
+            });
+
+            const data = await res.json();
+            setAllPrints([...allPrints, data]);
+
+            if (!data) {
+                throw new Error('Error adding print')
+            }
+            setNewPrintData({
+                status: '',
+                catalog_number: '',
+                artist: '',
+                image: null,
+                date: '',
+                size: '',
+                location: null,
+                instrument: null,
+                notes: null,
+                date_sold: null
+            })
+            setAllPrintsView(true);
+        } catch (error) {
+            console.error('Error adding print', error)
+        }
+    }
 
 
     // Sign Out function
@@ -113,7 +148,7 @@ function App() {
             : isSignedIn && allPrintsView ?
                 <Prints allPrints={allPrints} isSignedIn={isSignedIn} />
             : isSignedIn && addPrintView ?
-                <NewPrintForm setNewPrintData={setNewPrintData} addPrintView={addPrintView}/>
+                <NewPrintForm newPrintData={newPrintData} setNewPrintData={setNewPrintData} addPrintView={addPrintView} addPrint={addPrint} />
             : isSignedIn && searchView &&
                 <p>Search Coming Soon!</p>
             }
