@@ -77,9 +77,11 @@ body {
 /* PRINTS CONTAINER */
 #prints-container {
     margin: 2em 3em;
+    height: 60vh;
     padding: 2em;
-    overflow-y: auto;
+    overflow-y: scroll;
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 2em;
 }
@@ -133,7 +135,7 @@ body {
 
 /* CARD STYLES */
 .card {
-    width: 35em;
+    min-width: 35em;
     height: 22em;
     padding: 15px;
 }
@@ -166,14 +168,15 @@ body {
     width: 40%;
 }
 
-.thumbnail {
+/* .thumbnail {
     border: solid black 1pt;
     min-height: 5em;
     max-height: 7em;
     width: 6em;
-}
+} */
 .thumbnail img {
-    height: 85px;
+    max-height: 7em;
+    max-width: 6em;
 }
 
 
@@ -214,7 +217,7 @@ body {
     margin: 0 10em;
 }
 
-#status-dropdown {
+#status-dropdown, #size-dropdown {
     padding: 7px;
     width: 1.5in;
     border-radius: 5px;
