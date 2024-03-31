@@ -6,7 +6,6 @@ Print.init({
     "status": {
         type: DataTypes.ENUM,
         values: ["Available", "Sold", "Unavailable"],
-        defaultValue: 'Available',
         allowNull: false
     },
     "catalog_number": {
@@ -23,7 +22,7 @@ Print.init({
     },
     "date": {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: false
     },
     "size": {
         type: DataTypes.ENUM,

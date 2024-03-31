@@ -15,7 +15,7 @@ function App() {
     const [addPrintView, setAddPrintView] = useState(false)
 
     const [allPrints, setAllPrints] = useState([]);
-    const [newPrintData, setNewPrintData] = useState([{
+    const [newPrintData, setNewPrintData] = useState({
         status: '',
         catalog_number: '',
         artist: '',
@@ -26,7 +26,7 @@ function App() {
         instrument: null,
         notes: null,
         date_sold: null
-    }]);
+    });
 
 
 
@@ -121,6 +121,10 @@ function App() {
         }
     }
 
+    // Validates Form 
+    function validateForm() {
+        return Object.values(newPrintData).every(value => value !== '')
+    }
 
 
     // Toggle Views Functions
@@ -162,7 +166,7 @@ function App() {
             : isSignedIn && allPrintsView ?
                 <Prints allPrints={allPrints} isSignedIn={isSignedIn} />
             : isSignedIn && addPrintView ?
-                <NewPrintForm newPrintData={newPrintData} setNewPrintData={setNewPrintData} addPrintView={addPrintView} addPrint={addPrint} />
+                <NewPrintForm newPrintData={newPrintData} setNewPrintData={setNewPrintData} addPrintView={addPrintView} addPrint={addPrint} validateForm={validateForm}/>
             : isSignedIn && searchView &&
                 <p>Search Coming Soon!</p>
             }

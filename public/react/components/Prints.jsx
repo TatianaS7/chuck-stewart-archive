@@ -13,7 +13,7 @@ function Prints({ allPrints, isSignedIn }) {
                         <div className="card-body">
                             <div className="img-name-catalog">
                                 <div className="thumbnail">
-                                    <img src={print.image ? print.image : `/images/default-thumbnail.jpg`} alt="thumbnail"></img>
+                                    <img src={print.image ? print.image : `/images/default-thumbnail.jpg`} alt={print.catalog_number}></img>
                                 </div>    
                                 <h3 className="card-title">{print.artist} | {print.catalog_number}</h3>
                             </div><hr/>

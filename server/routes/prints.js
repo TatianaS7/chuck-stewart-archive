@@ -16,10 +16,9 @@ router.get('/all', async (req, res, next) => {
 
 // Add a Print
 router.post('/', [
-    check ('status').not().isEmpty().trim().withMessage('Status is Required'),
     check('catalog_number').not().isEmpty().trim().withMessage('Catalog # is Required'),
     check ('artist').not().isEmpty().trim().withMessage('Artist is Required'),
-    check ('size').not().isEmpty().trim().withMessage('Size is required')
+    check('date').not().isEmpty().trim().withMessage('Date is required')
 ], async (req, res, next) => {
     const errors = validationResult(req);
 
