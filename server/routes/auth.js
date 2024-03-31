@@ -34,6 +34,7 @@ router.post('/', async (req, res, next) => {
 
         res.status(201).json(newUser);
     } catch (error) {
+        console.error('Internal Server Error', error);
         next(error)
     }
 });
@@ -43,7 +44,7 @@ router.post('/', async (req, res, next) => {
 router.post('/login', [
     check ('email').not().isEmpty().trim().isEmail(),
     check ('password').not().isEmpty().trim().withMessage('Password cannot be empty')
-], async (req, res) => {
+], async (req, res, next) => {
     const errors = validationResult(req);
 
     if(!errors.isEmpty()) {
@@ -70,7 +71,7 @@ router.post('/login', [
             res.status(200).json(getUser);
         } catch (error) {
             console.error('Internal Server Error', error);
-            res.status(500).json({ error: 'Internal Server Error' })
+            next(error);
         }
     }
 });
@@ -81,6 +82,7 @@ router.get('/logout', async(req, res, next) => {
     try {
         res.status(200).json({ message: 'Logout Successful' })
     } catch (error) {
+        console.error('Internal Server Error', error);
         next(error)
     }
 });
