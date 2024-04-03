@@ -1,7 +1,6 @@
 .parcel-cache/
 
-index2.html
-
+db.sqlite
 
 # Logs
 logs
