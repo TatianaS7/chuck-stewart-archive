@@ -4,6 +4,7 @@ import NavBar from "./NavBar";
 import Prints from "./Prints";
 import NewPrintForm from "./NewPrintForm";
 import Search from "./Search";
+import DeletePrint from "./DeletePrint";
 import apiURL from "../api";
 
 function App() {
@@ -31,6 +32,8 @@ function App() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+
+  const [currentPrint, setCurrentPrint] = useState(null);
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -67,6 +70,7 @@ function App() {
     setIsSignedIn(false);
   }
 
+
   // Fetch All Prints Function
   async function fetchPrints() {
     try {
@@ -82,6 +86,7 @@ function App() {
       console.error("Error fetching prints", error);
     }
   }
+
 
   // Add New Print Function
   async function addPrint() {
@@ -113,7 +118,6 @@ function App() {
         notes: null,
         date_sold: null,
       });
-      setAllPrintsView(true);
     } catch (error) {
       console.error("Error adding print", error);
     }
@@ -123,6 +127,7 @@ function App() {
   function validateForm() {
     return Object.values(newPrintData).every((value) => value !== "");
   }
+
 
   // Search Prints Function
   async function searchPrints(searchQuery) {
@@ -142,6 +147,29 @@ function App() {
       console.error("Error searching prints", error);
     }
   }
+
+
+  //Delete Print Function
+  async function deletePrints(catalog_number) {
+    try {
+      console.log(catalog_number);
+      const res = await fetch(`${apiURL}/prints/${catalog_number}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      console.log(data)
+    } catch (error) {
+      console.error('Error deleting print', error)
+    }
+  }
+
+  // Sets Current Print
+  function handlePrintClick(print) {
+    console.log(print);
+    setCurrentPrint(print);
+  }
+
+
 
   // Toggle Views Functions
   function allPrintsClick() {
@@ -166,9 +194,11 @@ function App() {
     setSearchQuery("");
   }
 
+
   return (
     <main>
       <NavBar isSignedIn={isSignedIn} handleSignOut={handleSignOut} />
+      <DeletePrint currentPrint={currentPrint} deletePrints={deletePrints} fetchPrints={fetchPrints} allPrintsClick={allPrintsClick}  />
 
       {/* Show Menu When Signed In */}
       {isSignedIn ? (
@@ -176,11 +206,7 @@ function App() {
           <button type="button" className="view-title" onClick={allPrintsClick}>
             All Prints
           </button>
-          <button
-            type="button"
-            className="view-title"
-            onClick={searchPrintsClick}
-          >
+          <button type="button" className="view-title" onClick={searchPrintsClick}>
             Search
           </button>
           <button type="button" className="view-title" onClick={addPrintClick}>
@@ -200,7 +226,11 @@ function App() {
 
       {/* Show All Prints When Signed In AND All Prints View is Toggled  */}
       {isSignedIn && allPrintsView ? (
-        <Prints allPrints={allPrints} isSignedIn={isSignedIn} />
+        <Prints 
+          allPrints={allPrints} 
+          isSignedIn={isSignedIn} 
+          handlePrintClick={handlePrintClick} 
+        />
       ) : // Show Add Print Form When Signed In && Add Print view is Toggled
       isSignedIn && addPrintView ? (
         <NewPrintForm
@@ -209,6 +239,7 @@ function App() {
           addPrintView={addPrintView}
           addPrint={addPrint}
           validateForm={validateForm}
+          allPrintsClick={allPrintsClick}
         />
       ) : (
         // Show Search Bar When Signed In && Search View is Toggled
@@ -219,6 +250,7 @@ function App() {
             setSearchQuery={setSearchQuery}
             searchResults={searchResults}
             searchPrints={searchPrints}
+            handlePrintClick={handlePrintClick}
           />
         )
       )}

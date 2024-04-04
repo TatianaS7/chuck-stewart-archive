@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 
-function Prints({ allPrints, isSignedIn }) {
+function Prints({ allPrints, isSignedIn, handlePrintClick }) {
 
     
     return (
@@ -12,10 +12,16 @@ function Prints({ allPrints, isSignedIn }) {
                     <div className="card" key={idx}>
                         <div className="card-body">
                             <div className="img-name-catalog">
-                                <div className="thumbnail">
-                                    <img src={print.image ? print.image : `/images/default-thumbnail.jpg`} alt={print.catalog_number}></img>
-                                </div>    
-                                <h3 className="card-title">{print.artist} | {print.catalog_number}</h3>
+                                <div className="header-left">
+                                    <div className="thumbnail">
+                                        <img src={print.image ? print.image : `/images/default-thumbnail.jpg`} alt={print.catalog_number}></img>
+                                    </div>    
+                                    <h3 className="card-title">{print.artist} | {print.catalog_number}</h3>
+                                </div>
+                                <div className="control-buttons">
+                                    <button id="edit-button" className="btn btn-outline-dark">Edit</button>
+                                    <button id="delete-button" className="btn btn-outline-danger" onClick={() => handlePrintClick(print)}>Delete</button>
+                                </div>
                             </div><hr/>
 
                             <div className="data">
@@ -28,7 +34,7 @@ function Prints({ allPrints, isSignedIn }) {
                                 <div className="right-side">
                                     <p className="card-text"><b>Status:</b> {print.status}</p>
                                     <p className="card-text"><b>Notes:</b> {print.notes ? print.notes : ''}</p>
-                                    <p className="card-text"><b>Date Sold:</b>{print.date_sold ? print.date_sold : ''}</p>
+                                    <p className="card-text"><b>Date Sold:</b> {print.date_sold ? print.date_sold : ''}</p>
                                 </div>
                             </div>
                         </div>
