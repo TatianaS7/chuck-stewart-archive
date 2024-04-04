@@ -1,6 +1,6 @@
 import React from "react";
 
-function NewPrintForm({ validateForm, setNewPrintData, addPrint }) {
+function NewPrintForm({ validateForm, setNewPrintData, addPrint, allPrintsClick }) {
     
     function handleFormChange(e) {
         const { name, value } = e.target;
@@ -8,6 +8,11 @@ function NewPrintForm({ validateForm, setNewPrintData, addPrint }) {
             ...prevData,
             [name]: value,
         }))
+    }
+
+    function handleNewPrintSubmit() {
+        addPrint();
+        allPrintsClick();
     }
 
     return (
@@ -66,7 +71,7 @@ function NewPrintForm({ validateForm, setNewPrintData, addPrint }) {
             </div><br/>
 
             <div id="submit-div">
-                <button type="submit" id="submit-record-btn" className="btn btn-outline-light" onClick={addPrint} disabled={!validateForm()}>Submit</button>
+                <button type="submit" id="submit-record-btn" className="btn btn-outline-light" onClick={handleNewPrintSubmit} disabled={!validateForm()}>Submit</button>
             </div>
         </form>
     </>
