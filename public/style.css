@@ -133,7 +133,7 @@ body {
     flex-wrap: wrap;
     justify-content: space-between;
     padding: 2em;
-    gap: 15px;
+    gap: 2em;
     overflow-y: auto;
     max-height: 55vh;
 }
@@ -150,24 +150,36 @@ body {
 
 /* CARD STYLES */
 .card {
-    min-width: 35em;
+    width: 35em;
     height: 22em;
     padding: 15px;
 }
 
 .img-name-catalog {
     display: flex;
+    justify-content: space-between;
     gap: 10px;
     align-items: center;
+}
+
+.header-left {
+    display: flex;
+    justify-content: left;
+    gap: 1em;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 1em;
 }
 
 .data {
     display: flex;
     justify-content: space-between;
     margin-top: 1.5em;
-    max-height: 9em;
+    height: 22vh;
     overflow-y: auto;
-    padding: 0.5em;
+    padding: 1em 0.5em;
     font-size: 14pt;
 }
 
@@ -186,6 +198,10 @@ body {
 .thumbnail img {
     max-height: 7em;
     max-width: 6em;
+}
+
+#delete-img {
+    height: 10em;
 }
 
 
