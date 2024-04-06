@@ -13,14 +13,14 @@ router.get("/", async (req, res, next) => {
       where: {
         [Op.or]: [
           { catalog_number: searchQuery },
-          { artist: searchQuery },
-          { date: searchQuery },
-          { location: searchQuery },
+          { artist: { [Op.like]: `%${searchQuery}%` } },
+          { date: { [Op.like]: `%${searchQuery}%` } },
+          { location: { [Op.like]: `%${searchQuery}%` } },
           { size: searchQuery },
           { instrument: searchQuery },
           { status: searchQuery },
-          { notes: searchQuery },
-          { date_sold: searchQuery },
+          { notes: { [Op.like]: `%${searchQuery}%` } },
+          { date_sold: { [Op.like]: `%${searchQuery}%` } }
         ],
       },
     });
