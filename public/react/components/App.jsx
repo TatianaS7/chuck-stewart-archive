@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
+import apiURL from "../api";
+
 import Auth from "./Auth";
 import NavBar from "./NavBar";
 import Prints from "./Prints";
 import NewPrintForm from "./NewPrintForm";
 import Search from "./Search";
 import DeletePrint from "./DeletePrint";
-import apiURL from "../api";
+import UpdatePrintForm from "./UpdatePrintForm";
+
 
 function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -15,6 +18,8 @@ function App() {
   const [allPrintsView, setAllPrintsView] = useState(false);
   const [searchView, setSearchView] = useState(false);
   const [addPrintView, setAddPrintView] = useState(false);
+  const [deleteView, setDeleteView] = useState(false);
+  const [updateView, setUpdateView] = useState(false);
 
   const [allPrints, setAllPrints] = useState([]);
   const [newPrintData, setNewPrintData] = useState({
@@ -34,6 +39,7 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
 
   const [currentPrint, setCurrentPrint] = useState(null);
+
 
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -163,6 +169,31 @@ function App() {
     }
   }
 
+
+  // Update Print Function
+  async function updatePrint(catalog_number, updatedData) {
+    try {
+      const res = await fetch(`${apiURL}/prints/update/${catalog_number}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      })
+      const data = await res.json();  
+      setAllPrints([...allPrints, data])
+
+      if (!data) {
+        throw new Error("Error adding print");
+      }
+
+    } catch (error) {
+      console.error('Error updating print', error)
+    }
+  }
+
+
+
   // Sets Current Print
   function handlePrintClick(print) {
     console.log(print);
@@ -198,7 +229,17 @@ function App() {
   return (
     <main>
       <NavBar isSignedIn={isSignedIn} handleSignOut={handleSignOut} />
-      <DeletePrint currentPrint={currentPrint} deletePrints={deletePrints} fetchPrints={fetchPrints} allPrintsClick={allPrintsClick}  />
+      <DeletePrint currentPrint={currentPrint} setCurrentPrint={setCurrentPrint} deletePrints={deletePrints} fetchPrints={fetchPrints} allPrintsClick={allPrintsClick} deleteView={deleteView} setDeleteView={setDeleteView}  />
+      <UpdatePrintForm 
+        currentPrint={currentPrint}
+        setCurrentPrint={setCurrentPrint} 
+        allPrintsClick={allPrintsClick} 
+        updatePrint={updatePrint} 
+        validateForm={validateForm}
+        updateView={updateView}
+        setUpdateView={setUpdateView}
+        fetchPrints={fetchPrints}
+      />
 
       {/* Show Menu When Signed In */}
       {isSignedIn ? (
@@ -230,6 +271,8 @@ function App() {
           allPrints={allPrints} 
           isSignedIn={isSignedIn} 
           handlePrintClick={handlePrintClick} 
+          setDeleteView={setDeleteView}
+          setUpdateView={setUpdateView}
         />
       ) : // Show Add Print Form When Signed In && Add Print view is Toggled
       isSignedIn && addPrintView ? (

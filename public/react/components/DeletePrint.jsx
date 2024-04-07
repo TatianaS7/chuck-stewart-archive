@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Modal } from 'react-bootstrap'
 
 
-function DeletePrint({ currentPrint, deletePrints, fetchPrints, allPrintsClick }) {
+function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsClick, deleteView, setDeleteView }) {
     const [show, setShow] = useState(false);
     
 
     useEffect(() => {
-        if (currentPrint !== null) {
+        if (deleteView && currentPrint !== null) {
             setShow(true)
-        }    
-    }, [currentPrint])
+        }     
+    }, [deleteView, currentPrint])
 
     function handleDeleteClick() {
         deletePrints(currentPrint.catalog_number);
@@ -18,18 +18,17 @@ function DeletePrint({ currentPrint, deletePrints, fetchPrints, allPrintsClick }
         allPrintsClick();
     }
 
-    useEffect(() => {
-        fetchPrints();
-    }, [deletePrints])
 
     function handleCloseModal() {
         setShow(false);
+        setCurrentPrint(null);
+        setDeleteView(false);
     }
 
     return (
         <>
             {currentPrint &&  (
-                    <Modal show={show} onHide={handleCloseModal}>
+                    <Modal show={show} onHide={handleCloseModal} >
                     <Modal.Header>
                         <Modal.Title>Delete Print</Modal.Title>
                     </Modal.Header>
