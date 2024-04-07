@@ -67,10 +67,10 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
                         <input type="text" id="artist" name="artist" value={updatedData.artist} onChange={handleFormChange} required></input><br/>
 
                         <label htmlFor="image">Image:</label><br/>
-                        <input type="url" id="image" name="image" value={updatedData.image} onChange={handleFormChange}></input><br/>
+                        <input type="url" id="image" name="image" value={updatedData && updatedData.image} onChange={handleFormChange}></input><br/>
 
                         <label htmlFor="date">Date:</label><br/>
-                        <input type="text" id="date" name="date" value={updatedData.date} onChange={handleFormChange} required></input><br/>
+                        <input type="text" id="date" name="date" value={updatedData && updatedData.date} onChange={handleFormChange} required></input><br/>
 
 
                         <label htmlFor="size-dropdown">Size:</label><br/>
@@ -84,16 +84,16 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
 
                     <div id="right-side">
                         <br/><label htmlFor="location">Location:</label><br/>
-                        <input type="text" id="location" name="location" value={updatedData.location} onChange={handleFormChange}></input><br/>
+                        <input type="text" id="location" name="location" value={updatedData && updatedData.location} onChange={handleFormChange}></input><br/>
 
                         <label htmlFor="instrument">Instrument:</label><br/>
-                        <input type="text" id="instrument" name="instrument" value={updatedData.instrument} onChange={handleFormChange}></input><br/><br/>
+                        <input type="text" id="instrument" name="instrument" value={updatedData && updatedData.instrument} onChange={handleFormChange}></input><br/><br/>
                         
                         <label htmlFor="notes">Notes:</label><br/>
-                        <textarea type="text" id="notes" name="notes" value={updatedData.notes} cols="36" rows="3" onChange={handleFormChange}></textarea><br/>
+                        <textarea type="text" id="notes" name="notes" value={updatedData && updatedData.notes} cols="36" rows="3" onChange={handleFormChange}></textarea><br/>
 
                         <label htmlFor="date_sold">Date Sold:</label><br/>
-                        <input type="text" id="date_sold" name="date_sold" value={updatedData.date_sold} onChange={handleFormChange}></input>
+                        <input type="text" id="date_sold" name="date_sold" value={updatedData && updatedData.date_sold} onChange={handleFormChange}></input>
                     </div>
 
                     </div><br/>
