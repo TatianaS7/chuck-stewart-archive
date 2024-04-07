@@ -74,7 +74,7 @@ body {
 
 
 
-/* PRINTS CONTAINER */
+/* ALL PRINTS STYLES */
 #prints-container {
     margin: 2em 3em;
     height: 55vh;
@@ -85,6 +85,13 @@ body {
     justify-content: space-between;
     gap: 2em;
 }
+
+#print-count {
+    color: white;
+    margin: 0 3em;
+}
+
+
 
 
 

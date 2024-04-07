@@ -6,7 +6,7 @@ const { check, validationResult } = require('express-validator')
 // Get All Prints
 router.get('/all', async (req, res, next) => {
     try {
-        const allPrints = await Print.findAll();
+        const allPrints = await Print.findAndCountAll();
         res.status(200).json(allPrints)
     } catch (error) {
         next(error)
