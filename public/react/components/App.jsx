@@ -97,7 +97,6 @@ function App() {
   // Add New Print Function
   async function addPrint() {
     try {
-      console.log(newPrintData);
       const res = await fetch(`${apiURL}/prints`, {
         method: "POST",
         headers: {
@@ -107,6 +106,7 @@ function App() {
       });
 
       const data = await res.json();
+      console.log(data)
       setAllPrints([...allPrints, data]);
 
       if (!data) {
@@ -181,6 +181,7 @@ function App() {
         body: JSON.stringify(updatedData)
       })
       const data = await res.json();  
+      console.log(data);
       setAllPrints([...allPrints, data])
 
       if (!data) {
@@ -229,7 +230,14 @@ function App() {
   return (
     <main>
       <NavBar isSignedIn={isSignedIn} handleSignOut={handleSignOut} />
-      <DeletePrint currentPrint={currentPrint} setCurrentPrint={setCurrentPrint} deletePrints={deletePrints} fetchPrints={fetchPrints} allPrintsClick={allPrintsClick} deleteView={deleteView} setDeleteView={setDeleteView}  />
+      <DeletePrint 
+        currentPrint={currentPrint} 
+        setCurrentPrint={setCurrentPrint} 
+        deletePrints={deletePrints} 
+        fetchPrints={fetchPrints} 
+        allPrintsClick={allPrintsClick} 
+        deleteView={deleteView} 
+        setDeleteView={setDeleteView}  />
       <UpdatePrintForm 
         currentPrint={currentPrint}
         setCurrentPrint={setCurrentPrint} 
@@ -294,6 +302,8 @@ function App() {
             searchResults={searchResults}
             searchPrints={searchPrints}
             handlePrintClick={handlePrintClick}
+            setDeleteView={setDeleteView}
+            setUpdateView={setUpdateView}
           />
         )
       )}

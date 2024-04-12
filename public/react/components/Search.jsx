@@ -1,16 +1,27 @@
 import React from "react";
 import searchIMG from "../../images/search.png";
 
-function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, handlePrintClick }) {
+function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, handlePrintClick, setDeleteView, setUpdateView }) {
   function handleFormChange(e) {
     setSearchQuery(e.target.value);
   }
 
-  // Submit Search Function
-  function handleSearchSubmit(e) {
-    e.preventDefault();
-    searchPrints(searchQuery);
-  }
+    // Submit Search Function
+    function handleSearchSubmit(e) {
+        e.preventDefault();
+        searchPrints(searchQuery);
+    }
+
+    function handleDeleteBtnClick(print) {
+        handlePrintClick(print);
+        setDeleteView(true);
+    }
+
+    function handleEditBtnClick(print) {
+        handlePrintClick(print);
+        setUpdateView(true);
+    }
+
 
   return (
     <>
@@ -59,8 +70,8 @@ function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, hand
                                         <h3 className="card-title">{print.artist} | {print.catalog_number}</h3>
                                     </div>
                                     <div className="control-buttons">
-                                        <button id="edit-button" className="btn btn-outline-dark">Edit</button>
-                                        <button id="delete-button" className="btn btn-outline-danger" onClick={() => handlePrintClick(print)}>Delete</button>
+                                        <button id="edit-button" className="btn btn-outline-dark" onClick={() => handleEditBtnClick(print)}>Edit</button>
+                                        <button id="delete-button" className="btn btn-outline-danger" onClick={() => handleDeleteBtnClick(print)}>Delete</button>
                                     </div>
                                 </div><hr />
         

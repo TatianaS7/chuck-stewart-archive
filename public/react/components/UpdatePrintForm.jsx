@@ -24,15 +24,15 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
 
     function handleUpdateClick(updatedData) {
         updatePrint(updatedData.catalog_number, updatedData);
-        setShow(false)
-        allPrintsClick();
+        setShow(false);
         fetchPrints();
+        // allPrintsClick();
     }
 
     function handleCloseModal() {
         setShow(false);
         setCurrentPrint(null);
-        setUpdateView(false)
+        setUpdateView(false);
     }
 
 
