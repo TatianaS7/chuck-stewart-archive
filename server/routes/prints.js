@@ -62,7 +62,7 @@ router.delete('/:catalogNumber', async (req, res, next) => {
 
       await print.destroy();
 
-      const allPrints = await Print.findAll();
+      const allPrints = await Print.findAndCountAll();
       res.status(200).json({message: 'Print deleted successfully!', current_prints: allPrints});
     } catch (error) {
         console.error('Internal Server Error', error);
