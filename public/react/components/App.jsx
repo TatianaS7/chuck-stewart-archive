@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import apiURL from "../api";
 
 import Auth from "./Auth";
+import Profile from "./Profile";
 import NavBar from "./NavBar";
 import Prints from "./Prints";
 import NewPrintForm from "./NewPrintForm";
@@ -14,12 +15,14 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   const [allPrintsView, setAllPrintsView] = useState(false);
   const [searchView, setSearchView] = useState(false);
   const [addPrintView, setAddPrintView] = useState(false);
   const [deleteView, setDeleteView] = useState(false);
   const [updateView, setUpdateView] = useState(false);
+  const [profileView, setProfileView] = useState(false);
 
   const [allPrints, setAllPrints] = useState([]);
   const [newPrintData, setNewPrintData] = useState({
@@ -63,6 +66,9 @@ function App() {
       }
       localStorage.setItem("isAuthenticated", "true");
       setIsSignedIn(true);
+      setAllPrintsView(true);
+      await fetchProfile();
+
     } catch (error) {
       console.error("Error signing in", error);
     }
@@ -76,6 +82,22 @@ function App() {
     setIsSignedIn(false);
   }
 
+  // Get User Profile
+  async function fetchProfile() {
+    try {
+      const res = await fetch(`${apiURL}/auth/profile/${email}`);
+      const data = await res.json();
+
+      if (!data) {
+        throw new Error('Error fetching profile');
+      }
+      console.log(data);
+      setUserData(data);
+    } catch (error) {
+      console.error('Error fetching prints', error)
+    }
+  }
+
 
   // Fetch All Prints Function
   async function fetchPrints() {
@@ -86,7 +108,7 @@ function App() {
       if (!printData) {
         throw new Error("Error fetching prints");
       }
-
+      console.log(printData);
       setAllPrints(printData);
     } catch (error) {
       console.error("Error fetching prints", error);
@@ -210,6 +232,7 @@ function App() {
     setAllPrintsView(true);
     setSearchView(false);
     setAddPrintView(false);
+    setProfileView(false);
   }
 
   function addPrintClick() {
@@ -226,15 +249,22 @@ function App() {
     setSearchQuery("");
   }
 
+  function profileViewClick() {
+    setProfileView(!profileView);
+    setAllPrintsView(false);
+    setAddPrintView(false);
+    setSearchView(false);
+  }
+
 
   return (
     <main>
-      <NavBar isSignedIn={isSignedIn} handleSignOut={handleSignOut} />
+      <NavBar isSignedIn={isSignedIn} handleSignOut={handleSignOut} profileViewClick={profileViewClick} />
+
       <DeletePrint 
         currentPrint={currentPrint} 
         setCurrentPrint={setCurrentPrint} 
         deletePrints={deletePrints} 
-        fetchPrints={fetchPrints} 
         allPrintsClick={allPrintsClick} 
         deleteView={deleteView} 
         setDeleteView={setDeleteView}  />
@@ -262,7 +292,7 @@ function App() {
             Add Print
           </button>
         </div>
-      ) : (
+      ) : !isSignedIn && (
         // Show Sign In Form When Not Signed In
         <Auth
           email={email}
@@ -292,10 +322,9 @@ function App() {
           validateForm={validateForm}
           allPrintsClick={allPrintsClick}
         />
-      ) : (
+      ) : 
         // Show Search Bar When Signed In && Search View is Toggled
-        isSignedIn &&
-        searchView && (
+        isSignedIn && searchView ? (
           <Search
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -305,7 +334,10 @@ function App() {
             setDeleteView={setDeleteView}
             setUpdateView={setUpdateView}
           />
-        )
+        ) : 
+        // Show Profile When Signed In & Profile View is Toggled
+        isSignedIn && profileView && (
+          <Profile profileView={profileView} setProfileView={setProfileView} userData={userData} email={email} password={password} fetchProfile={fetchProfile} />
       )}
     </main>
   );

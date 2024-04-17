@@ -5,7 +5,7 @@
   "scripts": {
     "server": "nodemon server.js",
     "client": "parcel public/index.html --open",
-    "start": "npm run client && nodemon server.js"
+    "start": "npm run server && npm run client"
   },
   "repository": {
     "type": "git",

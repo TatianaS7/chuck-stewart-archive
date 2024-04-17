@@ -18,7 +18,6 @@ function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsCli
         allPrintsClick();
     }
 
-
     function handleCloseModal() {
         setShow(false);
         setCurrentPrint(null);

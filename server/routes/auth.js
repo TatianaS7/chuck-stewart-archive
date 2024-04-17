@@ -88,4 +88,25 @@ router.get('/logout', async(req, res, next) => {
 });
 
 
+// Get User Profile 
+router.get('/profile/:email', async(req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: {
+                email: req.params.email
+            }
+        })
+
+        if(!user) {
+            return res.status(401).json({ error: 'No user found'})
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Internal Server Error', error);
+        next(error)
+    }
+})
+
+
 module.exports = router;

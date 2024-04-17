@@ -24,6 +24,17 @@ body {
     display: flex;
     justify-content: right;
     padding: 1.5em 1.5em 0 0;
+    gap: 2em;
+}
+
+#avatar-icon {
+    height: 25px;
+    background-color: white;
+}
+
+#profile-btn {
+    background: none;
+    border: none;
 }
 
 
@@ -283,3 +294,13 @@ body {
 }
 
 
+/* PROFILE VIEW STYLES */
+#user-profile-data, #password-div {
+    color: white;
+}
+
+#user-data-div {
+    display: flex;
+    justify-content: space-between;
+    margin: 3em 15em;
+}
