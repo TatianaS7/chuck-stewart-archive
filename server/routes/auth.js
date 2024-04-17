@@ -109,4 +109,40 @@ router.get('/profile/:email', async(req, res, next) => {
 })
 
 
+// Update User Password
+router.put('/change-password/:email', async(req, res, next) => {
+    try {
+        const {current_password, new_password, confirm_password} = req.body;
+
+        const user = await User.findOne({
+            where: {
+                email: req.params.email
+            }
+        })
+
+        if(!user) {
+            return res.status(401).json({ error: 'No user found'})
+        }
+
+        const validatePassword = await bcrypt.compare(current_password, user.password);
+
+        if(!validatePassword) {
+            return res.status(401).json({ error: 'Incorrect Password' })
+        }
+
+        if(new_password !== confirm_password) {
+            return res.status(401).json({ error: 'Passwords Do Not Match' })
+        }
+
+        const newHashedPW = await bcrypt.hash(new_password, 10);
+        await user.update({ password: newHashedPW})
+
+        res.status(200).json({"message": 'Password updated successfully'})
+    } catch (error) {
+        console.error('Internal Server Error', error);
+        next(error)
+    }
+})
+
+
 module.exports = router;
