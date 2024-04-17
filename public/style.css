@@ -301,6 +301,24 @@ body {
 
 #user-data-div {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     margin: 3em 15em;
+}
+
+#user-profile-data p {
+    background-color: rgba(128, 128, 128, 0.395);
+    width: 12em;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+#updatePW {
+    display: flex;
+    justify-content: space-between;
+}
+
+#updatePW input {
+    border-radius: 5px;
+    border-width: 1pt;
+    height: 2em;
 }
