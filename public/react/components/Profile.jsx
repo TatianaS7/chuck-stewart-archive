@@ -26,11 +26,11 @@ function Profile({ profileView, userData, password, email, fetchProfile, passwor
         try {
             if(passwordForm.new_password !== passwordForm.confirm_password) {
                 console.error("Passwords do not match");
+                setSuccessfulChange(false);
                 return;
             }
             await updatePassword(email, passwordForm);
             setSuccessfulChange(true);
-            // setShow(false);
         } catch (error) {
             setSuccessfulChange(false);
             console.error('Error updating password', error)
@@ -91,7 +91,7 @@ function Profile({ profileView, userData, password, email, fetchProfile, passwor
                     </Modal.Body>
 
                     <Modal.Footer>
-                        {successfulChange === null ?
+                        {successfulChange === null || !successfulChange ?
                             <>
                                 <button type="button" className="btn btn-outline-danger" onClick={handleCloseModal} >Cancel</button>
                                 <button type="button" className="btn btn-dark" onClick={handlePasswordSubmit}>Submit</button>
