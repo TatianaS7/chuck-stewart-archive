@@ -16,6 +16,12 @@ function App() {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [passwordForm, setPasswordForm] = useState({
+    current_password: "",
+    new_password: "",
+    confirm_password: ""
+  });
+
 
   const [allPrintsView, setAllPrintsView] = useState(false);
   const [searchView, setSearchView] = useState(false);
@@ -80,6 +86,23 @@ function App() {
     setEmail(null);
     setPassword(null);
     setIsSignedIn(false);
+  }
+
+  // Update User Password
+  async function updatePassword(email) {
+    try {
+      const res = await fetch(`${apiURL}/auth/change-password/${email}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(passwordForm)
+      });
+      const data = await res.json();
+      console.log(data);
+    } catch (error) {
+      console.error('Error updating password', error)
+    }
   }
 
   // Get User Profile
@@ -151,7 +174,7 @@ function App() {
     }
   }
 
-  // Validates Form
+  // Validates New Print Form
   function validateForm() {
     return Object.values(newPrintData).every((value) => value !== "");
   }
@@ -337,7 +360,7 @@ function App() {
         ) : 
         // Show Profile When Signed In & Profile View is Toggled
         isSignedIn && profileView && (
-          <Profile profileView={profileView} setProfileView={setProfileView} userData={userData} email={email} password={password} fetchProfile={fetchProfile} />
+          <Profile profileView={profileView} setProfileView={setProfileView} userData={userData} email={email} password={password} fetchProfile={fetchProfile} passwordForm={passwordForm} setPasswordForm={setPasswordForm} updatePassword={updatePassword} />
       )}
     </main>
   );

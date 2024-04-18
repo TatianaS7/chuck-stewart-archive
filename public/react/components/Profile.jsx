@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from 'react-bootstrap'
 
-function Profile({ profileView, setProfileView, userData, email, password, fetchProfile }) {
+function Profile({ profileView, userData, password, email, fetchProfile, passwordForm, setPasswordForm, updatePassword }) {
     const [show, setShow] = useState(false);
+    const [successfulChange, setSuccessfulChange] = useState(null);    
 
     function handlePWClick() {
         setShow(true)
@@ -10,6 +11,30 @@ function Profile({ profileView, setProfileView, userData, email, password, fetch
 
     function handleCloseModal() {
         setShow(false)
+        setSuccessfulChange(null)
+    }
+
+    function handleFormChange(e) {
+        const { name, value } = e.target;
+        setPasswordForm({
+            ...passwordForm,
+            [name]: value
+        })
+    }
+
+    async function handlePasswordSubmit() {
+        try {
+            if(passwordForm.new_password !== passwordForm.confirm_password) {
+                console.error("Passwords do not match");
+                return;
+            }
+            await updatePassword(email, passwordForm);
+            setSuccessfulChange(true);
+            // setShow(false);
+        } catch (error) {
+            setSuccessfulChange(false);
+            console.error('Error updating password', error)
+        }
     }
 
     return (
@@ -43,23 +68,37 @@ function Profile({ profileView, setProfileView, userData, email, password, fetch
                 <Modal.Body>
                     <form id="updatePW">
                         <div>
-                            <label htmlFor="current-password">Current Password</label><br/>
-                            <input type="password" name="current-password"></input><br/>
+                            <label htmlFor="current_password">Current Password</label><br/>
+                            <input type="password" id="current_password" name="current_password" onChange={handleFormChange}></input><br/>
                         </div>
 
                         <div>
-                            <label htmlFor="new-password">New Password</label><br/>
-                            <input type="password" name="new-password"></input><br/>
+                            <label htmlFor="new_password">New Password</label><br/>
+                            <input type="password" name="new_password" onChange={handleFormChange}></input><br/>
 
-                            <label htmlFor="confirmed-password">Confirm Password</label><br/>
-                            <input type="password" name="confirmed-password"></input>
+                            <label htmlFor="confirm_password">Confirm Password</label><br/>
+                            <input type="password" name="confirm_password" onChange={handleFormChange}></input>
                         </div>
                     </form>
+                    <div id="change-response">
+                        {successfulChange ? 
+                        <p style={{color: 'green'}}>Password Changed Successfully</p>
+                        : successfulChange === false &&
+                        <p style={{color: 'red'}}>Password Change Unsuccessful</p>
+                        }
+
+                    </div>
                     </Modal.Body>
 
                     <Modal.Footer>
-                        <button type="button" className="btn btn-outline-danger" onClick={handleCloseModal} >Cancel</button>
-                        <button type="button" className="btn btn-dark">Submit</button>
+                        {successfulChange === null ?
+                            <>
+                                <button type="button" className="btn btn-outline-danger" onClick={handleCloseModal} >Cancel</button>
+                                <button type="button" className="btn btn-dark" onClick={handlePasswordSubmit}>Submit</button>
+                            </>
+                            : successfulChange && 
+                            <button type="button" className="btn btn-dark" onClick={handleCloseModal}>Close</button> 
+                        }
                     </Modal.Footer>
             </Modal>
         </>
