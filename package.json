@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Tool for searching the archive for Chuck Stewart's photography",
   "scripts": {
-    "server": "nodemon server.js",
+    "server": "node server.js",
+    "build": "parcel build client/index.html",
     "client": "parcel public/index.html --open",
-    "start": "npm run server && npm run client"
+    "start": "concurrently \"npm run server\" \"npm run client\""
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   "homepage": "https://github.com/TatianaS7/chuck-stewart-archive#readme",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "concurrently": "^9.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.19.2",
@@ -31,7 +33,7 @@
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.2",
     "react-dom": "^18.2.0",
-    "sequelize": "^6.37.1",
+    "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "validator": "^13.11.0"
   },

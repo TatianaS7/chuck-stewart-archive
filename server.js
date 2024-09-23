@@ -1,6 +1,6 @@
 const { db } = require('./server/db/connection');
 const app = require('./server/src/app');
-const port = 5000;
+const port = 8000;
 
 async function init() {
     try {
