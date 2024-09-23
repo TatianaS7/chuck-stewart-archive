@@ -15,6 +15,11 @@
     margin: 0 3em;
 }
 
+#no-prints-message {
+    color: white;
+    text-align: center;
+}
+
 
 /* CARD STYLES */
 .card {

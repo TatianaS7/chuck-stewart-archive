@@ -25,8 +25,6 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
     function handleUpdateClick(updatedData) {
         updatePrint(updatedData.catalog_number, updatedData);
         setShow(false);
-        fetchPrints();
-        // allPrintsClick();
     }
 
     function handleCloseModal() {
@@ -34,6 +32,13 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
         setCurrentPrint(null);
         setUpdateView(false);
     }
+
+    useEffect(() => {
+        if (!show) {
+            fetchPrints();
+            allPrintsClick();
+        }
+    }, [show]);
 
 
 
@@ -104,7 +109,7 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
             <Modal.Footer>
                 <div id="submit-div" style={{gap: '1em'}}>
                     <button type="submit" id="submit-record-btn" className="btn btn-danger" onClick={handleCloseModal}>Cancel</button>
-                    <button type="submit" id="submit-record-btn" className="btn btn-outline-success" onClick={() => handleUpdateClick(updatedData)}>Submit</button>
+                    <button type="submit" id="submit-record-btn" className="btn btn-dark" onClick={() => handleUpdateClick(updatedData)}>Save</button>
                 </div>
             </Modal.Footer>
         </Modal>

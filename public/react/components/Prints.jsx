@@ -16,6 +16,8 @@ function Prints({ allPrints, isSignedIn, handlePrintClick, setDeleteView, setUpd
     
     return (
         <>
+            {isSignedIn && allPrints && allPrints.count === 0 && (
+                <h5 id="no-prints-message">No prints in the database yet!</h5>)}
 
             {isSignedIn && allPrints && allPrints.count > 0 && (
                 <>

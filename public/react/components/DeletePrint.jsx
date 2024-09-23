@@ -3,31 +3,37 @@ import { Modal } from 'react-bootstrap'
 
 
 function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsClick, deleteView, setDeleteView }) {
-    const [show, setShow] = useState(false);
+    const [showDelete, setShowDelete] = useState(false);
     
 
     useEffect(() => {
         if (deleteView && currentPrint !== null) {
-            setShow(true)
+            setShowDelete(true)
         }     
     }, [deleteView, currentPrint])
 
     function handleDeleteClick() {
         deletePrints(currentPrint.catalog_number);
-        setShow(false);
+        setShowDelete(false);
         allPrintsClick();
     }
 
     function handleCloseModal() {
-        setShow(false);
+        setShowDelete(false);
         setCurrentPrint(null);
         setDeleteView(false);
     }
 
+    useEffect(() => {
+        if (!showDelete) {
+            allPrintsClick();
+        }
+    }, [showDelete]);
+
     return (
         <>
             {currentPrint &&  (
-                    <Modal show={show} onHide={handleCloseModal} >
+                    <Modal show={showDelete} onHide={handleCloseModal} >
                     <Modal.Header>
                         <Modal.Title>Delete Print</Modal.Title>
                     </Modal.Header>

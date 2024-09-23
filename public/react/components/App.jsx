@@ -24,7 +24,7 @@ function App() {
   });
 
 
-  const [allPrintsView, setAllPrintsView] = useState(false);
+  const [allPrintsView, setAllPrintsView] = useState(true);
   const [searchView, setSearchView] = useState(false);
   const [addPrintView, setAddPrintView] = useState(false);
   const [deleteView, setDeleteView] = useState(false);
@@ -146,6 +146,10 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    fetchPrints();
+  }, [])
+
 
   // Add New Print Function
   async function addPrint() {
@@ -236,6 +240,7 @@ function App() {
       const data = await res.json();  
       console.log(data);
       setAllPrints([...allPrints, data])
+      await fetchPrints();
 
       if (!data) {
         throw new Error("Error adding print");
