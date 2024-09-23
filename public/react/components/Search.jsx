@@ -1,4 +1,6 @@
 import React from "react";
+
+import "../styles/search.css";
 import searchIMG from "../../images/search.png";
 
 function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, handlePrintClick, setDeleteView, setUpdateView }) {
@@ -25,10 +27,8 @@ function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, hand
 
   return (
     <>
-    {searchResults.length === 0 && (
-        <>
             <div id="top-half">
-                <form id="search-form">
+                <form id="search-form" onSubmit={handleSearchSubmit}>
                     <input
                     id="search-input"
                     name="search-input"
@@ -45,11 +45,9 @@ function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, hand
                     </button>
                 </form>
             </div>
-        </>
-    )}
 
     {searchResults.error && 
-        <p id="noResults">No Results Found!</p>
+        <p id="noResults">No print results!</p>
     }
 
 

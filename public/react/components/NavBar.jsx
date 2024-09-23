@@ -1,4 +1,6 @@
 import React from "react";
+
+import "../styles/navbar.css";
 import avatar from '../../images/avatar.png'; 
 
 function NavBar({ isSignedIn, handleSignOut, profileViewClick }) {

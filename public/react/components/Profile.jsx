@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from 'react-bootstrap'
 
+import "../styles/profile.css";
+
 function Profile({ profileView, userData, password, email, fetchProfile, passwordForm, setPasswordForm, updatePassword }) {
     const [show, setShow] = useState(false);
     const [successfulChange, setSuccessfulChange] = useState(null);    

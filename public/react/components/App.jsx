@@ -17,6 +17,7 @@ function App() {
   const [password, setPassword] = useState(null);
   const [userData, setUserData] = useState(null);
   const [passwordForm, setPasswordForm] = useState({
+    email: email,
     current_password: "",
     new_password: "",
     confirm_password: ""
@@ -74,6 +75,7 @@ function App() {
       setIsSignedIn(true);
       setAllPrintsView(true);
       await fetchProfile();
+      await fetchPrints();
 
     } catch (error) {
       console.error("Error signing in", error);
@@ -89,9 +91,9 @@ function App() {
   }
 
   // Update User Password
-  async function updatePassword(email) {
+  async function updatePassword() {
     try {
-      const res = await fetch(`${apiURL}/auth/change-password/${email}`, {
+      const res = await fetch(`${apiURL}/auth/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +110,13 @@ function App() {
   // Get User Profile
   async function fetchProfile() {
     try {
-      const res = await fetch(`${apiURL}/auth/profile/${email}`);
+      const res = await fetch(`${apiURL}/auth/profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
       const data = await res.json();
 
       if (!data) {
@@ -245,7 +253,6 @@ function App() {
     console.log(print);
     setCurrentPrint(print);
   }
-
 
 
   // Toggle Views Functions

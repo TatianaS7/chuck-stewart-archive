@@ -1,0 +1,48 @@
+.view-title {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: lighter;
+    font-size: 16pt;
+    text-align: center;
+    margin-bottom: 2em
+}
+
+.view-title:focus {
+    border-bottom: white solid 1pt;
+}
+
+
+/* PROFILE VIEW STYLES */
+#user-profile-data, #password-div {
+    color: white;
+}
+
+#user-data-div {
+    display: flex;
+    justify-content: space-around;
+    margin: 3em 15em;
+}
+
+#user-profile-data p {
+    background-color: rgba(128, 128, 128, 0.395);
+    width: 12em;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+#updatePW {
+    display: flex;
+    justify-content: space-between;
+}
+
+#updatePW input {
+    border-radius: 5px;
+    border-width: 1pt;
+    height: 2em;
+}
+
+#change-response {
+    padding-top: 1em;
+    text-align: center;
+}

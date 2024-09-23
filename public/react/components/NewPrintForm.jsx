@@ -1,5 +1,7 @@
 import React from "react";
 
+import "../styles/NewPrintForm.css";
+
 function NewPrintForm({ validateForm, setNewPrintData, addPrint, allPrintsClick }) {
     
     function handleFormChange(e) {

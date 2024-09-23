@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from "react";
 
+import "../styles/prints.css";
+
 function Prints({ allPrints, isSignedIn, handlePrintClick, setDeleteView, setUpdateView }) {
 
     function handleDeleteBtnClick(print) {

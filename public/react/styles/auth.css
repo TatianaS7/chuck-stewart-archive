@@ -1,0 +1,11 @@
+/* SIGN IN STYLES */
+#admin-login {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#email, #password {
+    text-align: center;
+    padding: 5px;
+}

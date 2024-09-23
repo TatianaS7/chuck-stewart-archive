@@ -1,0 +1,65 @@
+/* NEW RECORD FORM */
+#add-records-div, #search-db-button {
+    display: flex;
+    justify-content: center;
+}
+
+#toggle-add-records, #toggle-search-database {
+    text-align: center; 
+    color: white; 
+    padding: 5px; 
+    font-weight: 300;
+    background: none;
+    border-style: none;
+}
+
+#add-records-form {
+    display: block;
+    color: white;
+    margin: 0 50px 30px 50px;
+}
+
+#add-records-form input, textarea {
+    padding: 7px;
+    min-width: 4in;
+    max-width: 5in;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+#status-fields {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin: 0 10em;
+}
+
+#status-dropdown, #size-dropdown {
+    padding: 7px;
+    width: 1.5in;
+    border-radius: 5px;
+    margin: 5px;  
+}
+
+#flex-container {
+    display: flex;
+    justify-content: center;
+    gap: 65px;
+    flex-wrap: wrap;
+    padding: 1em;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+#left-side {
+    display: block;
+}
+
+#right-side {
+    display: block;
+}
+
+#submit-div {
+    display: flex;
+    justify-content: center;
+}

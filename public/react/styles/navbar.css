@@ -1,0 +1,30 @@
+#header-div {
+    padding: 1.5em 0;
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    color: white;
+    text-transform: uppercase;
+}
+
+#navbar {
+    display: flex;
+    justify-content: right;
+    padding: 1.5em 1.5em 0 0;
+    gap: 2em;
+}
+
+#avatar-icon {
+    height: 25px;
+    background-color: white;
+}
+
+#profile-btn {
+    background: none;
+    border: none;
+}
+
+#sign-out-btn {
+    display: flex;
+    justify-content: right;
+}
