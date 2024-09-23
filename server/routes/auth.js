@@ -89,11 +89,13 @@ router.get('/logout', async(req, res, next) => {
 
 
 // Get User Profile 
-router.get('/profile/:email', async(req, res, next) => {
+router.post('/profile', async(req, res, next) => {
     try {
+        const { email } = req.body;
+
         const user = await User.findOne({
             where: {
-                email: req.params.email
+                email: email
             }
         })
 
@@ -110,13 +112,13 @@ router.get('/profile/:email', async(req, res, next) => {
 
 
 // Update User Password
-router.put('/change-password/:email', async(req, res, next) => {
+router.put('/change-password', async(req, res, next) => {
     try {
         const {current_password, new_password, confirm_password} = req.body;
 
         const user = await User.findOne({
             where: {
-                email: req.params.email
+                email: req.body.email
             }
         })
 
