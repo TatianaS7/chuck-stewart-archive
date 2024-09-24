@@ -58,41 +58,24 @@ async function uploadToAzure(containerName, blobName, base64Data) {
     }
 }
 
-// async function streamToString(readableStream) {
-//     readableStream.setEncoding("utf-8");
-//     let data = "";
-//     for await (const chunk of readableStream) {
-//         data += chunk;
-//     }
-//     return data;
-// }
+async function deleteBlob(containerName, blobName) {
+    try {
+        const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
+        if (!AZURE_STORAGE_CONNECTION_STRING) {
+            throw new Error("Azure Storage Connection String not found");
+        }
+
+        const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+        const containerClient = blobServiceClient.getContainerClient(containerName);
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+        const deleteBlobResponse = await blockBlobClient.delete();  
+        console.log("Blob was deleted successfully. requestId: ", deleteBlobResponse.requestId);
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 
 
-
-
-        // // DELETE A CONTAINER
-        // console.log("\nDeleting container...");
-
-        // const deleteContainerResponse = await containerClient.delete();
-        // console.log("Container was deleted successfully. requestId: ", deleteContainerResponse.requestId);
-
-        // // LIST BLOB(S)
-        // console.log("\nListing blobs...");
-
-        // for await (const blob of containerClient.listBlobsFlat()) {
-        //     const tempBlockBlobClient = containerClient.getBlockBlobClient(blob.name);
-    
-        //     // Display blob name
-        //     console.log("\t", blob.name);
-        // }
-    
-        // // DOWNLOAD BLOB(S)
-        // // Get blob content from position 0 to the end
-        // const downloadBlockBlobResponse = await blockBlobClient.download(0);
-        // console.log("\nDownloaded blob content...");
-        // console.log("\t", await streamToString(downloadBlockBlobResponse.readableStreamBody));
-    
-
-
-
-module.exports = { uploadToAzure };
+module.exports = { uploadToAzure, deleteBlob };

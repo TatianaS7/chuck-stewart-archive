@@ -141,7 +141,7 @@ async function fetchPrints() {
     if (!printData) {
       throw new Error("Error fetching prints");
     }
-    console.log(printData);
+    // console.log(printData);
     setAllPrints(printData.allPrints);
     setPrintCount(printData.count);
   } catch (error) {

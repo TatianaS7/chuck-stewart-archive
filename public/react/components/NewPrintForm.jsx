@@ -10,7 +10,6 @@ function NewPrintForm({ validateForm, setNewPrintData, addPrint, allPrintsClick 
             const file = files[0];
             const reader = new FileReader();
             reader.onload = () => {
-                console.log(reader.result);
                 setNewPrintData(prevData => ({
                     ...prevData,
                     image: reader.result,

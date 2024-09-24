@@ -12,13 +12,14 @@ function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsCli
         }     
     }, [deleteView, currentPrint])
 
-    function handleDeleteClick() {
-        deletePrints(currentPrint.catalog_number);
+    async function handleDeleteClick() {
+        await deletePrints(currentPrint.catalog_number);
         setShowDelete(false);
+        setDeleteView(false);
         allPrintsClick();
     }
 
-    function handleCloseModal() {
+    function handleCloseDeleteModal() {
         setShowDelete(false);
         setCurrentPrint(null);
         setDeleteView(false);
@@ -33,7 +34,7 @@ function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsCli
     return (
         <>
             {currentPrint &&  (
-                    <Modal show={showDelete} onHide={handleCloseModal} >
+                    <Modal show={showDelete} onHide={handleCloseDeleteModal} >
                     <Modal.Header>
                         <Modal.Title>Delete Print</Modal.Title>
                     </Modal.Header>
@@ -50,7 +51,7 @@ function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsCli
 
                     </Modal.Body>
                     <Modal.Footer>
-                        <button id="cancel" className="btn btn-outline-success" onClick={handleCloseModal}>Cancel</button>
+                        <button id="cancel" className="btn btn-outline-success" onClick={handleCloseDeleteModal}>Cancel</button>
                         <button id="continue" className="btn btn-danger" onClick={handleDeleteClick}>Delete</button>
                     </Modal.Footer>
                 </Modal>

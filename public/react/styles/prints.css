@@ -1,7 +1,7 @@
 /* ALL PRINTS STYLES */
 #prints-container {
     margin: 2em 3em;
-    height: 55vh;
+    height: 60vh;
     padding: 2em;
     overflow-y: scroll;
     display: flex;
@@ -24,7 +24,7 @@
 /* CARD STYLES */
 .card {
     width: 35em;
-    height: 22em;
+    height: 24em;
     padding: 15px;
 }
 
@@ -49,8 +49,8 @@
 .data {
     display: flex;
     justify-content: space-between;
-    margin-top: 1.5em;
-    height: 25vh;
+    /* margin-top: 1.5em; */
+    height: 11em;
     overflow-y: auto;
     padding: 1em 0.5em;
     font-size: 14pt;
@@ -68,11 +68,16 @@
     width: 40%;
 }
 
+.thumbnail {
+    border: solid 1pt black;
+}
+
 .thumbnail img {
     max-height: 7em;
     max-width: 6em;
 }
 
 #delete-img {
-    height: 10em;
+    width: 15em;
+    margin-bottom: 2em;
 }
