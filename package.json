@@ -22,11 +22,14 @@
   },
   "homepage": "https://github.com/TatianaS7/chuck-stewart-archive#readme",
   "dependencies": {
+    "@azure/identity": "^4.4.1",
+    "@azure/storage-blob": "^12.24.0",
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
     "concurrently": "^9.0.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.19.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
     "express-validator": "^7.0.1",
     "parcel": "^2.12.0",
     "pg-hstore": "^2.3.4",
@@ -35,6 +38,7 @@
     "react-dom": "^18.2.0",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
+    "uuid": "^10.0.0",
     "validator": "^13.11.0"
   },
   "devDependencies": {
@@ -42,6 +46,7 @@
     "browserify-zlib": "^0.2.0",
     "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
+    "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "querystring-es3": "^0.2.1",

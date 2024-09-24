@@ -5,15 +5,29 @@ import "../styles/NewPrintForm.css";
 function NewPrintForm({ validateForm, setNewPrintData, addPrint, allPrintsClick }) {
     
     function handleFormChange(e) {
-        const { name, value } = e.target;
-        setNewPrintData(prevData => ({
-            ...prevData,
-            [name]: value,
-        }))
+        const { name, value, files } = e.target;
+        if (name === 'image' && files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                console.log(reader.result);
+                setNewPrintData(prevData => ({
+                    ...prevData,
+                    image: reader.result,
+                }))
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setNewPrintData(prevData => ({
+                ...prevData,
+                [name]: value,
+            }))
+        }
     }
 
-    function handleNewPrintSubmit() {
-        addPrint();
+    async function handleNewPrintSubmit(e) {
+        e.preventDefault();
+        await addPrint();
         allPrintsClick();
     }
 
@@ -41,7 +55,7 @@ function NewPrintForm({ validateForm, setNewPrintData, addPrint, allPrintsClick 
                     <input type="text" id="artist" name="artist" onChange={handleFormChange} required></input><br/>
 
                     <label htmlFor="image">Image:</label><br/>
-                    <input type="url" id="image" name="image" onChange={handleFormChange}></input><br/>
+                    <input type="file" id="image" name="image" accept="image/*" onChange={handleFormChange}></input><br/>
 
                     <label htmlFor="date">Date:</label><br/>
                     <input type="text" id="date" name="date" onChange={handleFormChange} required></input><br/>

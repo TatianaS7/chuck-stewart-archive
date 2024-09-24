@@ -32,6 +32,8 @@ function App() {
   const [profileView, setProfileView] = useState(false);
 
   const [allPrints, setAllPrints] = useState([]);
+  const [printCount, setPrintCount] = useState(0);
+
   const [newPrintData, setNewPrintData] = useState({
     status: "",
     catalog_number: "",
@@ -130,26 +132,26 @@ function App() {
   }
 
 
-  // Fetch All Prints Function
-  async function fetchPrints() {
-    try {
-      const res = await fetch(`${apiURL}/prints/all`);
-      const printData = await res.json();
+// Fetch All Prints Function
+async function fetchPrints() {
+  try {
+    const res = await fetch(`${apiURL}/prints/all`);
+    const printData = await res.json();
 
-      if (!printData) {
-        throw new Error("Error fetching prints");
-      }
-      console.log(printData);
-      setAllPrints(printData);
-    } catch (error) {
-      console.error("Error fetching prints", error);
+    if (!printData) {
+      throw new Error("Error fetching prints");
     }
+    console.log(printData);
+    setAllPrints(printData.allPrints);
+    setPrintCount(printData.count);
+  } catch (error) {
+    console.error("Error fetching prints", error);
   }
+}
 
-  useEffect(() => {
-    fetchPrints();
-  }, [])
-
+useEffect(() => {
+  fetchPrints();
+}, []);
 
   // Add New Print Function
   async function addPrint() {
@@ -162,13 +164,16 @@ function App() {
         body: JSON.stringify(newPrintData),
       });
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Error adding print: ${errorText}`);
+      }
+
       const data = await res.json();
       console.log(data)
       setAllPrints([...allPrints, data]);
+      setPrintCount(printCount + 1);
 
-      if (!data) {
-        throw new Error("Error adding print");
-      }
       setNewPrintData({
         status: "",
         catalog_number: "",
@@ -342,6 +347,7 @@ function App() {
       {isSignedIn && allPrintsView ? (
         <Prints 
           allPrints={allPrints} 
+          printCount={printCount}
           isSignedIn={isSignedIn} 
           handlePrintClick={handlePrintClick} 
           setDeleteView={setDeleteView}
