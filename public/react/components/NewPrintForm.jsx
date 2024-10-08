@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 import "../styles/NewPrintForm.css";
 
-function NewPrintForm({ validateForm, setNewPrintData, addPrint, allPrintsClick }) {
+function NewPrintForm() {
+    const { setNewPrintData, validateForm, addPrint, allPrintsClick } = useContext(AppContext);
     
     function handleFormChange(e) {
         const { name, value, files } = e.target;

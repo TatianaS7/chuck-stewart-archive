@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { AppContext } from "./AppContext";
 import { Modal } from 'react-bootstrap'
 
 import "../styles/updatePrintForm.css";
 
 
-function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrentPrint, updateView, setUpdateView, fetchPrints }) {
+function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
+    const { currentPrint, setCurrentPrint, updateView, setUpdateView } = useContext(AppContext);
     const [show, setShow] = useState(false);
     const [updatedData, setUpdatedData] = useState(null);
 

@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 import "../styles/auth.css";
 
-function Auth({ setEmail, setPassword, handleSignInSubmit }) {
+function Auth() {
+    const { setEmail, setPassword, isSignedIn, handleSignInSubmit } = useContext(AppContext);
+
     function handleEmailChange(e) {
         setEmail(e.target.value);
         console.log(e.target.value)
@@ -24,6 +27,10 @@ function Auth({ setEmail, setPassword, handleSignInSubmit }) {
 
                 <button type="button" id="sign-in-btn" className="btn btn-outline-light" onClick={handleSignInSubmit}>Enter</button>
             </form>
+            
+            {!isSignedIn && (
+                <div id="error-msg"></div>
+            )}
         </>
     )
 

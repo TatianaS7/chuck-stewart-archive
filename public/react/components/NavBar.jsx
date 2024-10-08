@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 import "../styles/navbar.css";
 import avatar from '../../images/avatar.png'; 
 
-function NavBar({ isSignedIn, handleSignOut, profileViewClick }) {
+function NavBar({ handleSignOut, profileViewClick }) {
+    const { isSignedIn } = useContext(AppContext);
 
 
     return (

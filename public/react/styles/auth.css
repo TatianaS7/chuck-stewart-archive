@@ -9,3 +9,13 @@
     text-align: center;
     padding: 5px;
 }
+
+#email {
+    margin-left: 2em;
+}
+
+#error-msg {
+    color: red;
+    text-align: center;
+    margin-top: 1em;
+}

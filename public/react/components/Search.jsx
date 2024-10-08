@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 import "../styles/search.css";
 import searchIMG from "../../images/search.png";
 
-function Search({ searchQuery, setSearchQuery, searchResults, searchPrints, handlePrintClick, setDeleteView, setUpdateView }) {
-  function handleFormChange(e) {
-    setSearchQuery(e.target.value);
-  }
+function Search() {
+    const { searchPrints, handlePrintClick, searchQuery, setSearchQuery, searchResults, setDeleteView, setUpdateView } = useContext(AppContext);
+    
+    function handleFormChange(e) {
+        setSearchQuery(e.target.value);
+    }
 
     // Submit Search Function
     function handleSearchSubmit(e) {

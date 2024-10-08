@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AppContext } from "./AppContext";
 import { Modal } from 'react-bootstrap'
 
 
-function DeletePrint({ currentPrint, setCurrentPrint, deletePrints, allPrintsClick, deleteView, setDeleteView }) {
+function DeletePrint({ deletePrints, allPrintsClick }) {
+    const { currentPrint, setCurrentPrint, deleteView, setDeleteView } = useContext(AppContext);
     const [showDelete, setShowDelete] = useState(false);
     
 

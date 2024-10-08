@@ -1,9 +1,11 @@
-import React, {useState, useEffect} from "react";
+import React, { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 import "../styles/prints.css";
 
-function Prints({ allPrints, printCount, isSignedIn, handlePrintClick, setDeleteView, setUpdateView }) {
-
+function Prints() {
+    const { printCount, isSignedIn, setDeleteView, setUpdateView, allPrints, handlePrintClick } = useContext(AppContext);
+    
     function handleDeleteBtnClick(print) {
         handlePrintClick(print);
         setDeleteView(true);
