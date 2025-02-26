@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useContext } from "react";
+import { AppContext } from "./AppContext";
 import { Modal } from 'react-bootstrap'
 
 import "../styles/profile.css";
 
-function Profile({ profileView, userData, password, email, fetchProfile, passwordForm, setPasswordForm, updatePassword }) {
+function Profile() {
+    const { fetchProfile, updatePassword, profileView, userData, password, email, passwordForm, setPasswordForm } = useContext(AppContext);
     const [show, setShow] = useState(false);
     const [successfulChange, setSuccessfulChange] = useState(null);    
 

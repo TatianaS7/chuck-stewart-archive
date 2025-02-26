@@ -1,9 +1,11 @@
-import React, {useState, useEffect} from "react";
+import React, { useContext } from "react";
+import { AppContext } from "./AppContext";
 
 import "../styles/prints.css";
 
-function Prints({ allPrints, isSignedIn, handlePrintClick, setDeleteView, setUpdateView }) {
-
+function Prints() {
+    const { printCount, isSignedIn, setDeleteView, setUpdateView, allPrints, handlePrintClick } = useContext(AppContext);
+    
     function handleDeleteBtnClick(print) {
         handlePrintClick(print);
         setDeleteView(true);
@@ -16,15 +18,15 @@ function Prints({ allPrints, isSignedIn, handlePrintClick, setDeleteView, setUpd
     
     return (
         <>
-            {isSignedIn && allPrints && allPrints.count === 0 && (
+            {isSignedIn && allPrints && printCount === 0 && (
                 <h5 id="no-prints-message">No prints in the database yet!</h5>)}
 
-            {isSignedIn && allPrints && allPrints.count > 0 && (
+            {isSignedIn && allPrints && printCount > 0 && (
                 <>
-                    <h5 id="print-count">Print Count: {allPrints.count}</h5>
+                    <h5 id="print-count">Print Count: {printCount}</h5>
 
                     <div id="prints-container">
-                        {allPrints.rows.map((print, idx) => (
+                        {allPrints && allPrints.map((print, idx) => (
                             <div className="card" key={idx}>
                                 <div className="card-body">
                                     <div className="img-name-catalog">

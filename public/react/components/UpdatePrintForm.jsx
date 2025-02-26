@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { AppContext } from "./AppContext";
 import { Modal } from 'react-bootstrap'
 
+import "../styles/updatePrintForm.css";
 
-function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrentPrint, updateView, setUpdateView, fetchPrints }) {
+
+function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
+    const { currentPrint, setCurrentPrint, updateView, setUpdateView } = useContext(AppContext);
     const [show, setShow] = useState(false);
     const [updatedData, setUpdatedData] = useState(null);
 
@@ -15,11 +19,23 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
 
 
     function handleFormChange(e) {
-        const { name, value } = e.target;
-        setUpdatedData(prevData => ({
-            ...prevData,
-            [name]: value,
-        }))
+        const { name, value, files } = e.target;
+        if(name === 'image' && files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                setUpdatedData(prevData => ({
+                    ...prevData,
+                    image: reader.result,
+                }))
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setUpdatedData(prevData => ({
+                ...prevData,
+                [name]: value,
+            }))
+        }
     }
 
     function handleUpdateClick(updatedData) {
@@ -72,7 +88,12 @@ function UpdatePrintForm({ currentPrint, allPrintsClick, updatePrint, setCurrent
                         <input type="text" id="artist" name="artist" value={updatedData.artist} onChange={handleFormChange} required></input><br/>
 
                         <label htmlFor="image">Image:</label><br/>
-                        <input type="url" id="image" name="image" value={updatedData && updatedData.image} onChange={handleFormChange}></input><br/>
+                        {updatedData.image && (
+                            <div>
+                                <img id="img-preview" src={updatedData.image} alt="current"></img><br/>
+                                <input type="file" id="image" name="image" accept="image/*" onChange={handleFormChange}></input><br/>
+                            </div>
+                        )}
 
                         <label htmlFor="date">Date:</label><br/>
                         <input type="text" id="date" name="date" value={updatedData && updatedData.date} onChange={handleFormChange} required></input><br/>
