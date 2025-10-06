@@ -48,7 +48,7 @@ router.post('/login', [
     const errors = validationResult(req);
 
     if(!errors.isEmpty()) {
-        res.json({ error: errors.array() })
+        return res.status(400).json({ error: errors.array() })
     } else {
         try {
             const { email, password } = req.body;

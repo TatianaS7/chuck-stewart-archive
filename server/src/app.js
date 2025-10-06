@@ -12,9 +12,9 @@ app.use(express.json({ limit: '50mb' })); // For parsing application/json
 app.use(express.urlencoded({ limit: '50mb', extended: true})); // For parsing application/x-www-form-urlencoded
 
 
-app.use('/prints', printsRouter);
-app.use('/auth', authRouter);
-app.use('/search', searchRouter);
+app.use('/api/prints', printsRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/search', searchRouter);
 
 
 module.exports = app;
