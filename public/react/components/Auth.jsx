@@ -8,12 +8,10 @@ function Auth() {
 
     function handleEmailChange(e) {
         setEmail(e.target.value);
-        console.log(e.target.value)
     }
 
     function handlePasswordChange(e) {
         setPassword(e.target.value)
-        console.log(e.target.value)
     }
 
 

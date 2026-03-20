@@ -68,6 +68,10 @@ router.post('/login', [
             if (!validatePassword) {
                 return res.status(401).json({ error: 'Incorrect Password' })
             }
+
+            req.session.userId = getUser.id;
+            req.session.email = getUser.email;
+
             res.status(200).json(getUser);
         } catch (error) {
             console.error('Internal Server Error', error);
@@ -80,10 +84,36 @@ router.post('/login', [
 // Sign Out
 router.get('/logout', async(req, res, next) => {
     try {
-        res.status(200).json({ message: 'Logout Successful' })
+        req.session.destroy((err) => {
+            if (err) return next(err);
+
+            res.clearCookie('archive.sid');
+            res.status(200).json({ message: 'Logout Successful' });
+        });
     } catch (error) {
         console.error('Internal Server Error', error);
         next(error)
+    }
+});
+
+router.get('/session', async (req, res, next) => {
+    try {
+        if (!req.session?.userId) {
+            return res.status(401).json({ error: 'No active session' });
+        }
+
+        const user = await User.findByPk(req.session.userId, {
+            attributes: ['id', 'first_name', 'last_name', 'email']
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: 'No user found' });
+        }
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Internal Server Error', error);
+        next(error);
     }
 });
 
@@ -91,7 +121,11 @@ router.get('/logout', async(req, res, next) => {
 // Get User Profile 
 router.post('/profile', async(req, res, next) => {
     try {
-        const { email } = req.body;
+        const email = req.session?.email || req.body.email;
+
+        if (!email) {
+            return res.status(401).json({ error: 'No active session'});
+        }
 
         const user = await User.findOne({
             where: {
@@ -115,10 +149,15 @@ router.post('/profile', async(req, res, next) => {
 router.put('/change-password', async(req, res, next) => {
     try {
         const {current_password, new_password, confirm_password} = req.body;
+        const email = req.session?.email || req.body.email;
+
+        if (!email) {
+            return res.status(401).json({ error: 'No active session'});
+        }
 
         const user = await User.findOne({
             where: {
-                email: req.body.email
+                email: email
             }
         })
 
