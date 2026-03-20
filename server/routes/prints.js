@@ -15,6 +15,12 @@ function resolveContainer(size) {
   return map[size] || null;
 }
 
+function getBlobExtension(base64Data) {
+    if (base64Data.startsWith('data:image/png')) return 'png';
+    if (base64Data.startsWith('data:image/webp')) return 'webp';
+    return 'jpg';
+}
+
 // Get All Prints
 router.get("/all", async (req, res, next) => {
   try {
@@ -53,7 +59,8 @@ router.post(
         if (!containerName)
           return res.status(400).json({ error: "Invalid image size" });
 
-        blobName = `${uuidv4()}.jpg`;
+        const ext = getBlobExtension(req.body.image);
+        blobName = `${uuidv4()}.${ext}`;
         imageUrl = await uploadToAzure(containerName, blobName, req.body.image);
       }
 
@@ -139,7 +146,8 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
         return res.status(400).json({ error: "Invalid image size" });
       }
 
-      const newBlobName = `${uuidv4()}.jpg`;
+      const ext = getBlobExtension(req.body.image);
+      const newBlobName = `${uuidv4()}.${ext}`;
       imageUrl = await uploadToAzure(
         containerName,
         newBlobName,

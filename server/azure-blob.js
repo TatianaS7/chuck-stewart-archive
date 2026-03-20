@@ -1,81 +1,72 @@
 const { BlobServiceClient } = require("@azure/storage-blob");
-const { v1: uuidv1 } = require("uuid");
 require("dotenv").config();
 
+// Instantiate a single BlobServiceClient for the entire application, which will be shared across functions
+const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+if (!connectionString) {
+  throw new Error("Azure Storage Connection String not found");
+}
+const blobServiceClient =
+  BlobServiceClient.fromConnectionString(connectionString);
+
+// Container Cache to avoid redundant calls to Azure Blob Storage
+const verifiedContainers = new Set();
+
+async function ensureContainerExists(containerName) {
+  if (verifiedContainers.has(containerName)) return;
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  try {
+    await containerClient.create();
+    console.log(`Container "${containerName}" created successfully.`);
+  } catch (error) {
+    if (error.details && error.details.errorCode === "ContainerAlreadyExists") {
+      console.log(`Container "${containerName}" already exists.`);
+    } else {
+      throw error;
+    }
+  }
+  verifiedContainers.add(containerName);
+}
+
+// Get type of image
+function getContentType(base64Data) {
+    if (base64Data.startsWith("data:image/png")) return "image/png";
+    if (base64Data.startsWith("data:image/webp")) return "image/webp";
+    return 'image/jpeg'; // Default to JPEG if type is unknown
+}
+
+// Upload Function
 async function uploadToAzure(containerName, blobName, base64Data) {
-    try {
-        console.log("Azure Blob storage v12 - Chuck Stewart Archive");
-        // Quick start code goes here
-        const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  await ensureContainerExists(containerName);
 
-        if(!AZURE_STORAGE_CONNECTION_STRING) {
-            throw new Error("Azure Storage Connection String not found");
-        }
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-        const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+  // Strip data URL prefix if present
+  const base64String = base64Data.split(",")[1] || base64Data;
+  const buffer = Buffer.from(base64String, "base64");
 
-        console.log("\nCreating container...");
-        console.log("\t", containerName);
+  const contentType = getContentType(base64Data);
+  const response = await blockBlobClient.upload(buffer, buffer.length, {
+    blobHTTPHeaders: { blobContentType: contentType },
+  });
+  console.log(
+    `Blob "${blobName}" uploaded successfully. requestId: ${response.requestId}`,
+  );
 
-        // Get reference to a container
-        const containerClient = blobServiceClient.getContainerClient(containerName);
-
-       // Attempt to create the container
-       try {
-        const createContainerResponse = await containerClient.create();
-        console.log("Container was created successfully. requestId: ", createContainerResponse.requestId);
-        } catch (error) {
-            if (error.details && error.details.errorCode === 'ContainerAlreadyExists') {
-                console.log("Container already exists.");
-            } else {
-                throw error;
-            }
-        }
-
-        // Get a block blob client
-        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-        // Display blob name and URL
-        console.log(`\nUploading to Azure storage as blob:\n\t, ${blobName}:\n\tURL ${blockBlobClient.url}`);
-
-        // Remove the data URL prefix to get the base64 data
-        const base64String = base64Data.split(",")[1];
-
-        // Convert the base64 string to a buffer
-        const buffer = Buffer.from(base64String, "base64");
-
-        // Upload data to the blob
-        const uploadBlobResponse = await blockBlobClient.upload(buffer, buffer.length, {
-            blobHTTPHeaders: { blobContentType: "image/jpeg" }
-        });
-        console.log("Blob was uploaded successfully. requestId: ", uploadBlobResponse.requestId);
-
-        console.log("Blob URL: ", blockBlobClient.url);
-        return blockBlobClient.url;
-
-    } catch (error) {
-        console.log(error.message);
-    }
+  return blockBlobClient.url;
 }
 
+// Delete Function
 async function deleteBlob(containerName, blobName) {
-    try {
-        const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-        if (!AZURE_STORAGE_CONNECTION_STRING) {
-            throw new Error("Azure Storage Connection String not found");
-        }
-
-        const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
-        const containerClient = blobServiceClient.getContainerClient(containerName);
-        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-        const deleteBlobResponse = await blockBlobClient.delete();  
-        console.log("Blob was deleted successfully. requestId: ", deleteBlobResponse.requestId);
-    } catch (error) {
-        console.log(error.message);
-    }
+  const response = await blockBlobClient.delete();
+  console.log(
+    "Blob was deleted successfully. requestId: ",
+    response.requestId,
+  );
 }
-
 
 module.exports = { uploadToAzure, deleteBlob };
