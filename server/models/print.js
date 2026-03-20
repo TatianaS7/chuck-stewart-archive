@@ -20,6 +20,10 @@ Print.init({
         type: DataTypes.STRING,
         allowNull: true
     },
+    "blob_name": {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     "date": {
         type: DataTypes.STRING,
         allowNull: false
