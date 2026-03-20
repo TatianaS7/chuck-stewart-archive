@@ -1,5 +1,22 @@
-const { BlobServiceClient } = require("@azure/storage-blob");
+const { BlobServiceClient, generateBlobSASQueryParameters, BlobSASPermissions, StorageSharedKeyCredential } = require("@azure/storage-blob");
 require("dotenv").config();
+
+// Generate a SAS URL for image access
+function generateSasUrl(containerName, blobName) {
+  const accountName = process.env.AZURE_STORAGE_ACCOUNT_NAME;
+  const accountKey = process.env.AZURE_STORAGE_ACCOUNT_KEY;
+
+  const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
+
+  const sasToken = generateBlobSASQueryParameters({
+    containerName,
+    blobName,
+    permissions: BlobSASPermissions.parse("r"), // Read-only access
+    expiresOn: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hour expiration
+  }, sharedKeyCredential).toString();
+
+  return `https://${accountName}.blob.core.windows.net/${containerName}/${blobName}?${sasToken}`;
+  }
 
 // Instantiate a single BlobServiceClient for the entire application, which will be shared across functions
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
@@ -69,4 +86,4 @@ async function deleteBlob(containerName, blobName) {
   );
 }
 
-module.exports = { uploadToAzure, deleteBlob };
+module.exports = { uploadToAzure, deleteBlob, generateSasUrl };

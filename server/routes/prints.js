@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Print = require("../models/print");
 const { check, validationResult } = require("express-validator");
-const { uploadToAzure, deleteBlob } = require("../azure-blob");
+const { uploadToAzure, deleteBlob, generateSasUrl } = require("../azure-blob");
 const { v4: uuidv4 } = require("uuid");
 
 // Helper function to resolve container name based on size
@@ -26,8 +26,22 @@ router.get("/all", async (req, res, next) => {
   try {
     const allPrints = await Print.findAll();
     const count = await Print.count();
-    res.status(200).json({ count, allPrints });
+
+    // Attach SAS URLs to prints with images
+    const printsWithSas = allPrints.map((print) => {
+        if (print.blob_name) {
+          const containerName = resolveContainer(print.size);
+          return {
+            ...print.toJSON(),
+            image: generateSasUrl(containerName, print.blob_name),
+          }
+        }
+        return print.toJSON();
+      });
+
+    res.status(200).json({ count, allPrints: printsWithSas });
   } catch (error) {
+    console.error('Error fetching prints:', error.message || error);
     next(error);
   }
 });
@@ -140,7 +154,17 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
     let imageUrl = print.image;
     let blobName = print.blob_name;
 
-    if (req.body.image) {
+    const isNewImage = req.body.image && req.body.image.startsWith('data:image');
+
+    if (req.body.removeImage && print.blob_name) {
+      // User explicitly removed the image in the edit form
+      const containerName = resolveContainer(print.size);
+      if (containerName) {
+        await deleteBlob(containerName, print.blob_name);
+      }
+      imageUrl = null;
+      blobName = null;
+    } else if (isNewImage) {
       const containerName = resolveContainer(req.body.size || print.size);
       if (!containerName) {
         return res.status(400).json({ error: "Invalid image size" });
@@ -153,12 +177,14 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
         newBlobName,
         req.body.image,
       );
+      blobName = newBlobName;
 
       // Delete Old Image
       if (print.blob_name) {
-        const oldImageUrl = new URL(print.image);
-        const oldContainerName = oldImageUrl.pathname.split("/")[1];
-        await deleteBlob(oldContainerName, print.blob_name);
+        const oldContainerName = resolveContainer(print.size);
+        if (oldContainerName) {
+          await deleteBlob(oldContainerName, print.blob_name);
+        }
       }
     }
 
@@ -175,6 +201,7 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
       notes: req.body.notes,
       date_sold: req.body.date_sold,
     });
+    
 
     res.status(200).json(print);
   } catch (error) {
