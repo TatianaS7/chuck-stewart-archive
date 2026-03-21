@@ -227,6 +227,7 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${apiURL}/prints`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -290,6 +291,7 @@ export const AppProvider = ({ children }) => {
       console.log(catalog_number);
       const res = await fetch(`${apiURL}/prints/${catalog_number}`, {
         method: "DELETE",
+        credentials: "include",
       });
       const data = await res.json();
       console.log(data);
@@ -303,6 +305,7 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${apiURL}/prints/update/${catalog_number}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },

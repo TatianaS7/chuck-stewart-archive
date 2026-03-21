@@ -4,6 +4,7 @@ const app = require('./server/src/app');
 // Import models before syncing so Sequelize knows about them
 const Print = require('./server/models/print');
 const User = require('./server/models/user');
+const PrintChangeLog = require('./server/models/printChangeLog');
 
 const port = 8000;
 
