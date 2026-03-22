@@ -1,7 +1,17 @@
 import React, { useContext, useMemo, useState } from "react";
-import Papa from "papaparse";
 import apiURL from "../../api";
 import { AppContext } from "../AppContext";
+import BulkUploadStatusPanel from "./BulkUploadStatusPanel";
+import BulkUploadSummary from "./BulkUploadSummary";
+import BulkUploadReviewTable from "./BulkUploadReviewTable";
+import {
+  buildImportBatches,
+  buildReviewRows,
+  mergeImportedValidation,
+  normalizeReviewData,
+  parseSelectedFile,
+  requestBulkValidation,
+} from "./bulkUploadUtils";
 
 function BulkUploadSection() {
   const { fetchPrints } = useContext(AppContext);
@@ -18,20 +28,6 @@ function BulkUploadSection() {
   const [isValidating, setIsValidating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
-  const editableFields = [
-    "status",
-    "catalog_number",
-    "artist",
-    "date",
-    "size",
-    "category",
-    "signed",
-    "location",
-    "instrument",
-    "notes",
-    "date_sold",
-  ];
-
   const selectedRowCount = useMemo(
     () => reviewRows.filter((row) => row.selected).length,
     [reviewRows],
@@ -44,92 +40,6 @@ function BulkUploadSection() {
 
   function updateStatus(phase, message, tone = phase, progress = null) {
     setStatusInfo({ phase, tone, message, progress });
-  }
-
-  function normalizeHeader(header) {
-    return String(header || "")
-      .trim()
-      .toLowerCase()
-      .replace(/[\s-]+/g, "_");
-  }
-
-  function normalizeReviewData(row = {}) {
-    return {
-      status: String(row.status || "").trim(),
-      catalog_number: String(row.catalog_number || "").trim(),
-      artist: String(row.artist || "").trim(),
-      date: String(row.date || "").trim(),
-      size: String(row.size || "").trim(),
-      category: String(row.category || "").trim(),
-      signed: row.signed === true || ["true", "yes", "1"].includes(String(row.signed).toLowerCase()),
-      location: String(row.location || "").trim(),
-      instrument: String(row.instrument || "").trim(),
-      notes: String(row.notes || "").trim(),
-      date_sold: String(row.date_sold || "").trim(),
-    };
-  }
-
-  function buildReviewRows(validatedRows, previousRows = []) {
-    const previousSelection = new Map(
-      previousRows.map((row) => [row.rowNumber, row.selected]),
-    );
-
-    return validatedRows.map((row) => ({
-      ...row,
-      selected: previousSelection.has(row.rowNumber)
-        ? previousSelection.get(row.rowNumber) && row.canImport
-        : row.canImport,
-    }));
-  }
-
-  async function requestBulkValidation(rows) {
-    const res = await fetch(`${apiURL}/prints/bulk/validate`, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ rows }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.message || "Unable to validate bulk upload.");
-    }
-
-    return data;
-  }
-
-  async function parseSelectedFile() {
-    const fileText = await selectedFile.text();
-
-    updateStatus("parsing", "Parsing CSV rows for review...", "working");
-
-    const parseResult = Papa.parse(fileText, {
-      header: true,
-      skipEmptyLines: "greedy",
-      transformHeader: normalizeHeader,
-    });
-
-    const warnings = parseResult.errors.map((error) => {
-      const rowNumber = Number.isInteger(error.row) ? error.row + 2 : "Unknown";
-      return `Row ${rowNumber}: ${error.message}`;
-    });
-
-    const rows = parseResult.data
-      .map((row, index) => ({
-        rowNumber: index + 2,
-        data: normalizeReviewData(row),
-      }))
-      .filter((row) => Object.values(row.data).some((value) => value));
-
-    if (!rows.length) {
-      throw new Error("The selected CSV did not contain any usable data rows.");
-    }
-
-    setParserWarnings(warnings);
-    return rows;
   }
 
   async function validateRowsForReview(rows, previousRows = []) {
@@ -184,8 +94,10 @@ function BulkUploadSection() {
 
     try {
       updateStatus("reading", "Reading CSV file from disk...", "working");
-      const parsedRows = await parseSelectedFile();
-      await validateRowsForReview(parsedRows);
+      updateStatus("parsing", "Parsing CSV rows for review...", "working");
+      const parsedResult = await parseSelectedFile(selectedFile);
+      setParserWarnings(parsedResult.warnings);
+      await validateRowsForReview(parsedResult.rows);
     } catch (error) {
       setReviewRows([]);
       setValidationSummary(null);
@@ -241,31 +153,6 @@ function BulkUploadSection() {
           : row,
       ),
     );
-  }
-
-  function mergeImportedValidation(existingRows, validatedRows) {
-    const validatedByRowNumber = new Map(
-      validatedRows.map((row) => [row.rowNumber, row]),
-    );
-
-    return existingRows.map((row) => {
-      const nextRow = validatedByRowNumber.get(row.rowNumber);
-
-      if (!nextRow) return row;
-
-      return {
-        ...nextRow,
-        selected: row.selected && nextRow.canImport,
-      };
-    });
-  }
-
-  function buildImportBatches(rows, batchSize = 10) {
-    const batches = [];
-    for (let index = 0; index < rows.length; index += batchSize) {
-      batches.push(rows.slice(index, index + batchSize));
-    }
-    return batches;
   }
 
   async function handleImportRows() {
@@ -376,22 +263,7 @@ function BulkUploadSection() {
           instrument, notes, date_sold
         </p>
 
-        <div className={`bulk-upload-status bulk-upload-status-${statusInfo.tone}`}>
-          <p className="bulk-upload-status-phase">{statusInfo.phase}</p>
-          <p className="bulk-upload-status-message">{statusInfo.message}</p>
-          {statusInfo.progress && (
-            <div className="bulk-upload-progress">
-              <div
-                className="bulk-upload-progress-bar"
-                style={{
-                  width: `${Math.round(
-                    (statusInfo.progress.current / statusInfo.progress.total) * 100,
-                  )}%`,
-                }}
-              />
-            </div>
-          )}
-        </div>
+        <BulkUploadStatusPanel statusInfo={statusInfo} />
 
         <div className="bulk-upload-actions">
           <button
@@ -424,26 +296,10 @@ function BulkUploadSection() {
           <p className="bulk-upload-filename">Selected: {selectedFile.name}</p>
         )}
 
-        {validationSummary && (
-          <div className="bulk-upload-summary-grid">
-            <div className="bulk-upload-summary-block">
-              <span className="bulk-upload-summary-value">{validationSummary.totalRows}</span>
-              <span className="bulk-upload-summary-label">Parsed Rows</span>
-            </div>
-            <div className="bulk-upload-summary-block is-valid">
-              <span className="bulk-upload-summary-value">{validationSummary.validRows}</span>
-              <span className="bulk-upload-summary-label">Valid Rows</span>
-            </div>
-            <div className="bulk-upload-summary-block is-invalid">
-              <span className="bulk-upload-summary-value">{validationSummary.invalidRows}</span>
-              <span className="bulk-upload-summary-label">Needs Review</span>
-            </div>
-            <div className="bulk-upload-summary-block">
-              <span className="bulk-upload-summary-value">{selectedRowCount}</span>
-              <span className="bulk-upload-summary-label">Selected To Save</span>
-            </div>
-          </div>
-        )}
+        <BulkUploadSummary
+          validationSummary={validationSummary}
+          selectedRowCount={selectedRowCount}
+        />
 
         {parserWarnings.length > 0 && (
           <div className="bulk-upload-warning-box">
@@ -456,132 +312,13 @@ function BulkUploadSection() {
           </div>
         )}
 
-        {reviewRows.length > 0 && (
-          <>
-            <div className="bulk-upload-review-header">
-              <div>
-                <b>Manual Review</b>
-                <p className="admin-subtle">
-                  Edit any values that need correction, deselect rows you do not want to save,
-                  then re-validate before import.
-                </p>
-              </div>
-              <div className="bulk-upload-review-totals">
-                <span>{selectedRowCount} selected</span>
-                <span>{invalidRowCount} invalid</span>
-              </div>
-            </div>
-
-            <div className="bulk-upload-review-table-wrapper">
-              <table className="bulk-upload-review-table">
-                <thead>
-                  <tr>
-                    <th>Save</th>
-                    <th>Row</th>
-                    <th>Validation</th>
-                    {editableFields.map((field) => (
-                      <th key={field}>{field.replace("_", " ")}</th>
-                    ))}
-                    <th>Issues</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reviewRows.map((row) => (
-                    <tr key={row.rowNumber}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={row.selected}
-                          disabled={!row.canImport}
-                          onChange={() => handleRowSelectionChange(row.rowNumber)}
-                        />
-                      </td>
-                      <td>{row.rowNumber}</td>
-                      <td>
-                        <span
-                          className={`bulk-upload-validation-pill ${
-                            row.canImport ? "is-valid" : "is-invalid"
-                          }`}
-                        >
-                          {row.canImport ? "Ready" : "Needs Fix"}
-                        </span>
-                      </td>
-                      {editableFields.map((field) => (
-                        <td key={`${row.rowNumber}-${field}`}>
-                          {field === "status" ? (
-                            <select
-                              value={row.data[field] || ""}
-                              onChange={(e) =>
-                                handleRowFieldChange(row.rowNumber, field, e.target.value)
-                              }
-                            >
-                              <option value="">Select status</option>
-                              <option value="Available">Available</option>
-                              <option value="Sold">Sold</option>
-                              <option value="Unavailable">Unavailable</option>
-                            </select>
-                          ) : field === "size" ? (
-                            <select
-                              value={row.data[field] || ""}
-                              onChange={(e) =>
-                                handleRowFieldChange(row.rowNumber, field, e.target.value)
-                              }
-                            >
-                              <option value="">Select size</option>
-                              <option value="11x14">11x14</option>
-                              <option value="16x20">16x20</option>
-                              <option value="11x14C">11x14C</option>
-                            </select>
-                          ) : field === "category" ? (
-                            <select
-                              value={row.data[field] || ""}
-                              onChange={(e) =>
-                                handleRowFieldChange(row.rowNumber, field, e.target.value)
-                              }
-                            >
-                              <option value="">No category</option>
-                              <option value="Musicians">Musicians</option>
-                              <option value="Other">Other</option>
-                            </select>
-                          ) : field === "signed" ? (
-                            <select
-                              value={String(row.data[field] ?? false)}
-                              onChange={(e) =>
-                                handleRowFieldChange(row.rowNumber, field, e.target.value === "true")
-                              }
-                            >
-                              <option value="false">No</option>
-                              <option value="true">Yes</option>
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              value={row.data[field] || ""}
-                              onChange={(e) =>
-                                handleRowFieldChange(row.rowNumber, field, e.target.value)
-                              }
-                            />
-                          )}
-                        </td>
-                      ))}
-                      <td>
-                        {row.issues.length ? (
-                          <ul className="bulk-upload-issues-list">
-                            {row.issues.map((issue) => (
-                              <li key={`${row.rowNumber}-${issue}`}>{issue}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <span className="bulk-upload-no-issues">No issues</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+        <BulkUploadReviewTable
+          reviewRows={reviewRows}
+          selectedRowCount={selectedRowCount}
+          invalidRowCount={invalidRowCount}
+          onRowSelectionChange={handleRowSelectionChange}
+          onRowFieldChange={handleRowFieldChange}
+        />
       </div>
     </div>
   );
