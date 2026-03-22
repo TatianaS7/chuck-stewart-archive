@@ -31,12 +31,15 @@ export const AppProvider = ({ children }) => {
     catalog_number: "",
     artist: "",
     image: null,
+    certificate: null,
     date: "",
     size: "",
     location: null,
     instrument: null,
     notes: null,
     date_sold: null,
+    category: null,
+    signed: false,
   });
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -249,12 +252,15 @@ export const AppProvider = ({ children }) => {
         catalog_number: "",
         artist: "",
         image: null,
+        certificate: null,
         date: "",
         size: "",
         location: null,
         instrument: null,
         notes: null,
         date_sold: null,
+        category: null,
+        signed: false,
       });
     } catch (error) {
       console.error("Error adding print", error);

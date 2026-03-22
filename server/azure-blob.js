@@ -47,6 +47,7 @@ async function ensureContainerExists(containerName) {
 
 // Get type of image
 function getContentType(base64Data) {
+  if (base64Data.startsWith("data:application/pdf")) return "application/pdf";
     if (base64Data.startsWith("data:image/png")) return "image/png";
     if (base64Data.startsWith("data:image/webp")) return "image/webp";
     return 'image/jpeg'; // Default to JPEG if type is unknown

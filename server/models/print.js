@@ -24,6 +24,14 @@ Print.init({
         type: DataTypes.STRING,
         allowNull: true
     },
+    "certificate": {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    "certificate_blob_name": {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     "date": {
         type: DataTypes.STRING,
         allowNull: false
@@ -48,6 +56,16 @@ Print.init({
     "date_sold": {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    "category": {
+        type: DataTypes.ENUM,
+        values: ["Musicians", "Other"],
+        allowNull: true
+    },
+    "signed": {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 }, {
     sequelize: db,

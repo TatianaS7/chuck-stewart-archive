@@ -10,7 +10,7 @@ const port = 8000;
 
 async function init() {
     try {
-        await db.sync();
+        await db.sync({ alter: true });
         app.listen(port, () => {
             console.log(`Server is running on http://localhost:${port}`);
         });

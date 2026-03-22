@@ -8,7 +8,6 @@ const { Op } = require("sequelize");
 const { uploadToAzure, deleteBlob, generateSasUrl } = require("../azure-blob");
 const { v4: uuidv4 } = require("uuid");
 
-// Helper function to resolve container name based on size
 function resolveContainer(size) {
   const map = {
     "11x14": "11x14-images",
@@ -18,14 +17,18 @@ function resolveContainer(size) {
   return map[size] || null;
 }
 
+const CERTIFICATE_CONTAINER = "print-certificates";
+
 function getBlobExtension(base64Data) {
-    if (base64Data.startsWith('data:image/png')) return 'png';
-    if (base64Data.startsWith('data:image/webp')) return 'webp';
-    return 'jpg';
+  if (base64Data.startsWith("data:application/pdf")) return "pdf";
+  if (base64Data.startsWith("data:image/png")) return "png";
+  if (base64Data.startsWith("data:image/webp")) return "webp";
+  return "jpg";
 }
 
 async function logPrintChange({ action, catalogNumber, description, req }) {
-  const changedBy = req.session?.email || req.body?.changed_by || req.body?.email || "System";
+  const changedBy =
+    req.session?.email || req.body?.changed_by || req.body?.email || "System";
 
   await PrintChangeLog.create({
     action,
@@ -40,7 +43,13 @@ function formatValue(value) {
   return String(value);
 }
 
-const BULK_REQUIRED_FIELDS = ["status", "catalog_number", "artist", "date", "size"];
+const BULK_REQUIRED_FIELDS = [
+  "status",
+  "catalog_number",
+  "artist",
+  "date",
+  "size",
+];
 const BULK_STATUS_VALUES = ["Available", "Sold", "Unavailable"];
 const BULK_SIZE_VALUES = ["11x14", "16x20", "11x14C"];
 
@@ -65,6 +74,10 @@ function normalizeBulkRow(row = {}) {
     instrument: normalizeOptionalBulkValue(row.instrument),
     notes: normalizeOptionalBulkValue(row.notes),
     date_sold: normalizeOptionalBulkValue(row.date_sold),
+    category: normalizeOptionalBulkValue(row.category),
+    signed:
+      row.signed === true ||
+      ["true", "yes", "1"].includes(String(row.signed).toLowerCase()),
   };
 }
 
@@ -134,6 +147,10 @@ async function validateBulkRows(rows = []) {
       issues.push("date sold should only be set when status is Sold.");
     }
 
+    if (data.category && !["Musicians", "Other"].includes(data.category)) {
+      issues.push("category must be one of: Musicians, Other.");
+    }
+
     return {
       rowNumber: row.rowNumber,
       data,
@@ -154,32 +171,38 @@ async function validateBulkRows(rows = []) {
   };
 }
 
-// Get All Prints
 router.get("/all", async (req, res, next) => {
   try {
     const allPrints = await Print.findAll();
     const count = await Print.count();
 
-    // Attach SAS URLs to prints with images
     const printsWithSas = allPrints.map((print) => {
-        if (print.blob_name) {
-          const containerName = resolveContainer(print.size);
-          return {
-            ...print.toJSON(),
-            image: generateSasUrl(containerName, print.blob_name),
-          }
+      const payload = print.toJSON();
+
+      if (print.blob_name) {
+        const containerName = resolveContainer(print.size);
+        if (containerName) {
+          payload.image = generateSasUrl(containerName, print.blob_name);
         }
-        return print.toJSON();
-      });
+      }
+
+      if (print.certificate_blob_name) {
+        payload.certificate = generateSasUrl(
+          CERTIFICATE_CONTAINER,
+          print.certificate_blob_name,
+        );
+      }
+
+      return payload;
+    });
 
     res.status(200).json({ count, allPrints: printsWithSas });
   } catch (error) {
-    console.error('Error fetching prints:', error.message || error);
+    console.error("Error fetching prints:", error.message || error);
     next(error);
   }
 });
 
-// Add a Print
 router.post(
   "/",
   [
@@ -194,35 +217,51 @@ router.post(
   async (req, res, next) => {
     const errors = validationResult(req);
 
-    if (!errors.isEmpty())
-      return res.status(400).json({ error: errors.array() });
+    if (!errors.isEmpty()) return res.status(400).json({ error: errors.array() });
 
     try {
       let imageUrl = null;
       let blobName = null;
+      let certificateUrl = null;
+      let certificateBlobName = null;
 
       if (req.body.image) {
         const containerName = resolveContainer(req.body.size);
-        if (!containerName)
+        if (!containerName) {
           return res.status(400).json({ error: "Invalid image size" });
+        }
 
         const ext = getBlobExtension(req.body.image);
         blobName = `${uuidv4()}.${ext}`;
         imageUrl = await uploadToAzure(containerName, blobName, req.body.image);
       }
 
+      if (req.body.certificate) {
+        const certExt = getBlobExtension(req.body.certificate);
+        certificateBlobName = `cert-${uuidv4()}.${certExt}`;
+        certificateUrl = await uploadToAzure(
+          CERTIFICATE_CONTAINER,
+          certificateBlobName,
+          req.body.certificate,
+        );
+      }
+
       const newPrint = await Print.create({
         status: req.body.status,
         catalog_number: req.body.catalog_number,
         artist: req.body.artist,
-        image: imageUrl ? imageUrl : null,
+        image: imageUrl,
         blob_name: blobName,
+        certificate: certificateUrl,
+        certificate_blob_name: certificateBlobName,
         date: req.body.date,
         size: req.body.size,
         location: req.body.location,
         instrument: req.body.instrument,
         notes: req.body.notes,
         date_sold: req.body.date_sold,
+        category: req.body.category || null,
+        signed: req.body.signed === true || req.body.signed === "true",
       });
 
       await logPrintChange({
@@ -291,6 +330,8 @@ router.post("/bulk/import", async (req, res, next) => {
         ...row.data,
         image: null,
         blob_name: null,
+        certificate: null,
+        certificate_blob_name: null,
       });
 
       importedCatalogNumbers.push(createdPrint.catalog_number);
@@ -314,7 +355,6 @@ router.post("/bulk/import", async (req, res, next) => {
   }
 });
 
-// Get Recent Print Change Log
 router.get("/change-log", async (req, res, next) => {
   try {
     const { action, user, catalog, from, to } = req.query;
@@ -348,7 +388,14 @@ router.get("/change-log", async (req, res, next) => {
       limit: 200,
     });
 
-    const userEmails = [...new Set(logs.map((log) => log.changed_by).filter((value) => value && value.includes("@")))];
+    const userEmails = [
+      ...new Set(
+        logs
+          .map((log) => log.changed_by)
+          .filter((value) => value && value.includes("@")),
+      ),
+    ];
+
     const users = await User.findAll({
       where: {
         email: {
@@ -361,12 +408,14 @@ router.get("/change-log", async (req, res, next) => {
     const userByEmail = new Map(
       users.map((user) => [
         user.email,
-        `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Unknown User",
+        `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          "Unknown User",
       ]),
     );
 
     const formattedLogs = logs.map((log) => {
-      const email = log.changed_by && log.changed_by.includes("@") ? log.changed_by : "N/A";
+      const email =
+        log.changed_by && log.changed_by.includes("@") ? log.changed_by : "N/A";
       const name = email !== "N/A" ? userByEmail.get(email) || "Unknown User" : "System";
 
       return {
@@ -384,7 +433,6 @@ router.get("/change-log", async (req, res, next) => {
   }
 });
 
-// Delete a Print
 router.delete("/:catalogNumber", async (req, res, next) => {
   try {
     const print = await Print.findOne({
@@ -399,11 +447,15 @@ router.delete("/:catalogNumber", async (req, res, next) => {
       });
     }
 
-    // If print had image, delete from Azure Blob Storage
-    if (print.image) {
-      const imageUrl = new URL(print.image);
-      const containerName = imageUrl.pathname.split("/")[1];
-      await deleteBlob(containerName, print.blob_name);
+    if (print.blob_name) {
+      const containerName = resolveContainer(print.size);
+      if (containerName) {
+        await deleteBlob(containerName, print.blob_name);
+      }
+    }
+
+    if (print.certificate_blob_name) {
+      await deleteBlob(CERTIFICATE_CONTAINER, print.certificate_blob_name);
     }
 
     const deletedCatalog = print.catalog_number;
@@ -430,7 +482,6 @@ router.delete("/:catalogNumber", async (req, res, next) => {
   }
 });
 
-// Update a Print
 router.put("/update/:catalogNumber", async (req, res, next) => {
   try {
     const print = await Print.findOne({
@@ -448,11 +499,14 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
     const previousPrintData = print.toJSON();
     let imageUrl = print.image;
     let blobName = print.blob_name;
+    let certificateUrl = print.certificate;
+    let certificateBlobName = print.certificate_blob_name;
 
-    const isNewImage = req.body.image && req.body.image.startsWith('data:image');
+    const isNewImage = req.body.image && req.body.image.startsWith("data:image");
+    const isNewCertificate =
+      req.body.certificate && req.body.certificate.startsWith("data:");
 
     if (req.body.removeImage && print.blob_name) {
-      // User explicitly removed the image in the edit form
       const containerName = resolveContainer(print.size);
       if (containerName) {
         await deleteBlob(containerName, print.blob_name);
@@ -467,19 +521,33 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
 
       const ext = getBlobExtension(req.body.image);
       const newBlobName = `${uuidv4()}.${ext}`;
-      imageUrl = await uploadToAzure(
-        containerName,
-        newBlobName,
-        req.body.image,
-      );
+      imageUrl = await uploadToAzure(containerName, newBlobName, req.body.image);
       blobName = newBlobName;
 
-      // Delete Old Image
       if (print.blob_name) {
         const oldContainerName = resolveContainer(print.size);
         if (oldContainerName) {
           await deleteBlob(oldContainerName, print.blob_name);
         }
+      }
+    }
+
+    if (req.body.removeCertificate && print.certificate_blob_name) {
+      await deleteBlob(CERTIFICATE_CONTAINER, print.certificate_blob_name);
+      certificateUrl = null;
+      certificateBlobName = null;
+    } else if (isNewCertificate) {
+      const certExt = getBlobExtension(req.body.certificate);
+      const newCertificateBlobName = `cert-${uuidv4()}.${certExt}`;
+      certificateUrl = await uploadToAzure(
+        CERTIFICATE_CONTAINER,
+        newCertificateBlobName,
+        req.body.certificate,
+      );
+      certificateBlobName = newCertificateBlobName;
+
+      if (print.certificate_blob_name) {
+        await deleteBlob(CERTIFICATE_CONTAINER, print.certificate_blob_name);
       }
     }
 
@@ -489,12 +557,20 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
       artist: req.body.artist,
       image: imageUrl,
       blob_name: blobName,
+      certificate: certificateUrl,
+      certificate_blob_name: certificateBlobName,
       date: req.body.date,
       size: req.body.size,
       location: req.body.location,
       instrument: req.body.instrument,
       notes: req.body.notes,
       date_sold: req.body.date_sold,
+      category:
+        req.body.category !== undefined ? req.body.category || null : print.category,
+      signed:
+        req.body.signed !== undefined
+          ? req.body.signed === true || req.body.signed === "true"
+          : print.signed,
     });
 
     const changedFields = [];
@@ -508,13 +584,17 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
       "instrument",
       "notes",
       "date_sold",
+      "category",
+      "signed",
     ];
 
     comparableFields.forEach((field) => {
       if (previousPrintData[field] !== print[field]) {
         const fieldName = field.replace("_", " ");
         changedFields.push(
-          `${fieldName}: ${formatValue(previousPrintData[field])} -> ${formatValue(print[field])}`,
+          `${fieldName}: ${formatValue(previousPrintData[field])} -> ${formatValue(
+            print[field],
+          )}`,
         );
       }
     });
@@ -524,6 +604,16 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
     } else if (isNewImage) {
       changedFields.push(
         previousPrintData.blob_name ? "image: replaced" : "image: added",
+      );
+    }
+
+    if (req.body.removeCertificate) {
+      changedFields.push("certificate: present -> removed");
+    } else if (isNewCertificate) {
+      changedFields.push(
+        previousPrintData.certificate_blob_name
+          ? "certificate: replaced"
+          : "certificate: added",
       );
     }
 
@@ -537,7 +627,6 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
       description,
       req,
     });
-    
 
     res.status(200).json(print);
   } catch (error) {

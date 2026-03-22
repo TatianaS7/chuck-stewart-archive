@@ -10,31 +10,34 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
   const [show, setShow] = useState(false);
   const [updatedData, setUpdatedData] = useState(null);
   const [imageAction, setImageAction] = useState(null);
+  const [certificateAction, setCertificateAction] = useState(null);
 
   useEffect(() => {
     if (updateView && currentPrint !== null) {
       setShow(true);
       setUpdatedData(currentPrint);
       setImageAction("keep");
+      setCertificateAction("keep");
     }
   }, [updateView, currentPrint]);
 
   function handleFormChange(e) {
     const { name, value, files } = e.target;
-    if (name === "image" && files.length > 0) {
+    if ((name === "image" || name === "certificate") && files.length > 0) {
       const file = files[0];
       const reader = new FileReader();
       reader.onload = () => {
         setUpdatedData((prevData) => ({
           ...prevData,
-          image: reader.result,
+          [name]: reader.result,
         }));
       };
       reader.readAsDataURL(file);
     } else {
+      const parsedValue = name === "signed" ? value === "true" : value;
       setUpdatedData((prevData) => ({
         ...prevData,
-        [name]: value,
+        [name]: parsedValue,
       }));
     }
   }
@@ -50,8 +53,13 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
       instrument: updatedData.instrument,
       notes: updatedData.notes,
       date_sold: updatedData.date_sold,
+      category: updatedData.category || null,
+      signed: updatedData.signed === true || updatedData.signed === "true",
       removeImage: imageAction === "remove",
       image: imageAction === "replace" ? updatedData.image : undefined,
+      removeCertificate: certificateAction === "remove",
+      certificate:
+        certificateAction === "replace" ? updatedData.certificate : undefined,
     };
     await updatePrint(updatedData.catalog_number, payload);
     setShow(false);
@@ -62,6 +70,7 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
     setCurrentPrint(null);
     setUpdateView(false);
     setImageAction(null);
+    setCertificateAction(null);
   }
 
   useEffect(() => {
@@ -149,6 +158,83 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
     );
   }
 
+  function renderCertificateSelection() {
+    if (certificateAction === "replace") {
+      return (
+        <div>
+          <input
+            type="file"
+            id="certificate"
+            name="certificate"
+            accept=".pdf,image/*"
+            onChange={handleFormChange}
+          ></input>
+          <br />
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary mt-1"
+            onClick={() => setCertificateAction("keep")}
+          >
+            Cancel
+          </button>
+        </div>
+      );
+    }
+
+    if (certificateAction === "remove") {
+      return (
+        <div>
+          <p style={{ color: "gray", fontStyle: "italic" }}>
+            Certificate will be removed on save
+          </p>
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            onClick={() => setCertificateAction("keep")}
+          >
+            Undo
+          </button>
+        </div>
+      );
+    }
+
+    if (updatedData.certificate) {
+      return (
+        <div>
+          <p style={{ color: "gray", marginBottom: "0.5em" }}>
+            Certificate attached
+          </p>
+          <div style={{ display: "flex", gap: "0.5em" }}>
+            <button
+              type="button"
+              className="btn btn-sm btn-dark"
+              onClick={() => setCertificateAction("replace")}
+            >
+              Replace
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-danger"
+              onClick={() => setCertificateAction("remove")}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className="btn btn-sm btn-dark"
+        onClick={() => setCertificateAction("replace")}
+      >
+        + Add Certificate
+      </button>
+    );
+  }
+
   return (
     <Modal show={show} onHide={handleCloseModal} size="xl">
       <Modal.Header>
@@ -160,23 +246,52 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
             id="add-records-form"
             style={{ color: "black", fontWeight: "2pt" }}
           >
-            <div>
-              <label htmlFor="status-dropdown">Status</label>
-              <br />
-              <select
-                id="status-dropdown"
-                name="status"
-                value={updatedData.status}
-                onChange={handleFormChange}
-                required
-              >
-                <option value="">Select Status</option>
-                <option value="Available">Available</option>
-                <option value="Unavailable">Unavailable</option>
-                <option value="Sold">Sold</option>
-              </select>
-              <hr />
+            <div id="status-fields">
+              <div className="status-field-group">
+                <label htmlFor="status-dropdown">Status</label>
+                <select
+                  id="status-dropdown"
+                  name="status"
+                  value={updatedData.status}
+                  onChange={handleFormChange}
+                  required
+                >
+                  <option value="">Select Status</option>
+                  <option value="Available">Available</option>
+                  <option value="Unavailable">Unavailable</option>
+                  <option value="Sold">Sold</option>
+                </select>
+              </div>
+
+              <div className="status-field-group">
+                <label htmlFor="category-dropdown">Category:</label>
+                <select
+                  id="category-dropdown"
+                  name="category"
+                  value={updatedData.category || ""}
+                  onChange={handleFormChange}
+                >
+                  <option value="">Select Category</option>
+                  <option value="Musicians">Musicians</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div className="status-field-group">
+                <label htmlFor="signed-dropdown">Signed:</label>
+                <select
+                  id="signed-dropdown"
+                  name="signed"
+                  value={String(updatedData.signed ?? false)}
+                  onChange={handleFormChange}
+                >
+                  <option value="false">No</option>
+                  <option value="true">Yes</option>
+                </select>
+              </div>
             </div>
+
+            <hr />
 
             <div id="flex-container">
               <div id="left-side">
@@ -209,6 +324,11 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
                 {renderImageSelection()}
                 <br />
 
+                <label htmlFor="certificate">Certificate File:</label>
+                <br />
+                {renderCertificateSelection()}
+                <br />
+
                 <label htmlFor="date">Date:</label>
                 <br />
                 <input
@@ -235,6 +355,7 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
                   <option value="11x14C">11x14C</option>
                   <option value="16x20">16x20</option>
                 </select>
+
               </div>
 
               <div id="right-side">

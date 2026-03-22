@@ -4,6 +4,8 @@ const Print = require("../models/print");
 const { Op } = require("sequelize");
 const { generateSasUrl } = require("../azure-blob");
 
+const CERTIFICATE_CONTAINER = "print-certificates";
+
 function resolveContainer(size) {
   const map = {
     "11x14": "11x14-images",
@@ -29,6 +31,7 @@ router.get("/", async (req, res, next) => {
           { status: searchQuery },
           { notes: { [Op.like]: `%${searchQuery}%` } },
           { date_sold: { [Op.like]: `%${searchQuery}%` } },
+          { category: { [Op.like]: `%${searchQuery}%` } },
         ],
       },
     });
@@ -38,17 +41,23 @@ router.get("/", async (req, res, next) => {
     }
 
     const rowsWithSas = searchResults.rows.map((print) => {
+      const payload = print.toJSON();
+
       if (print.blob_name) {
         const containerName = resolveContainer(print.size);
         if (containerName) {
-          return {
-            ...print.toJSON(),
-            image: generateSasUrl(containerName, print.blob_name),
-          };
+          payload.image = generateSasUrl(containerName, print.blob_name);
         }
       }
 
-      return print.toJSON();
+      if (print.certificate_blob_name) {
+        payload.certificate = generateSasUrl(
+          CERTIFICATE_CONTAINER,
+          print.certificate_blob_name,
+        );
+      }
+
+      return payload;
     });
 
     res.status(200).json({
