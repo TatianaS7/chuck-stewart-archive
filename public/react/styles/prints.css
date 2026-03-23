@@ -88,6 +88,10 @@
     padding: 15px;
 }
 
+.card-title {
+    font-size: 18pt;
+}
+
 .img-name-catalog {
     display: flex;
     justify-content: space-between;
@@ -139,8 +143,10 @@
 }
 
 .certificate-btn {
-    margin-top: 0.2em;
-    margin-bottom: 0.35em;
+    border: none;
+    text-decoration: underline;
+    margin-bottom: 1em;
+    padding: 0;
 }
 
 .certificate-preview-content {
@@ -237,6 +243,12 @@
     background-color: rgba(120, 160, 255, 0.2);
     border-color: rgba(120, 160, 255, 0.5);
     color: #aac4ff;
+}
+
+.badge-musicians {
+    background-color: rgba(255, 195, 120, 0.2);
+    border-color: #b96408;
+    color: #b96408;
 }
 
 .badge-signed {

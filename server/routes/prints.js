@@ -52,6 +52,211 @@ const BULK_REQUIRED_FIELDS = [
 ];
 const BULK_STATUS_VALUES = ["Available", "Sold", "Unavailable"];
 const BULK_SIZE_VALUES = ["11x14", "16x20", "11x14C"];
+const IMAGE_EXTENSIONS = [
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "gif",
+  "bmp",
+  "tif",
+  "tiff",
+];
+const WORD_EXTENSIONS = ["doc", "docx"];
+const YEAR_TOKEN_REGEX = /^19\d{2}$/;
+const SIZE_TOKEN_REGEX = /^(11x14c?|16x20|11x14)$/;
+
+function getFileExtension(fileName = "") {
+  const parts = String(fileName).toLowerCase().split(".");
+  return parts.length > 1 ? parts.pop() : "";
+}
+
+function getFileBaseName(fileName = "") {
+  return String(fileName)
+    .replace(/\.[^.]+$/, "")
+    .trim();
+}
+
+function normalizeCatalogMatchValue(value = "") {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function tokenizeCatalogMatchValue(value = "") {
+  const normalized = normalizeCatalogMatchValue(value);
+  return normalized ? normalized.split(/\s+/) : [];
+}
+
+function findCatalogMatchAtPositions(
+  catalogEntries,
+  fileTokens,
+  positions,
+  predicate,
+) {
+  for (const position of positions) {
+    for (const entry of catalogEntries) {
+      if (predicate && !predicate(entry)) {
+        continue;
+      }
+
+      if (position + entry.catalogTokens.length > fileTokens.length) {
+        continue;
+      }
+
+      const isMatch = entry.catalogTokens.every(
+        (token, tokenIndex) => fileTokens[position + tokenIndex] === token,
+      );
+
+      if (isMatch) {
+        return entry.catalog_number;
+      }
+    }
+  }
+
+  return null;
+}
+
+function buildCatalogMatcher(prints = []) {
+  const catalogEntries = prints
+    .map((print) => {
+      const catalogTokens = tokenizeCatalogMatchValue(print.catalog_number);
+
+      return {
+        catalog_number: print.catalog_number,
+        catalogTokens,
+        compactCatalog: catalogTokens.join(""),
+      };
+    })
+    .filter((entry) => entry.catalogTokens.length)
+    .sort((left, right) => {
+      if (right.catalogTokens.length !== left.catalogTokens.length) {
+        return right.catalogTokens.length - left.catalogTokens.length;
+      }
+
+      return right.compactCatalog.length - left.compactCatalog.length;
+    });
+
+  return (fileName = "") => {
+    const fileBaseName = getFileBaseName(fileName);
+    const fileTokens = tokenizeCatalogMatchValue(fileBaseName);
+    const reviewNotes = [];
+
+    if (!fileTokens.length) {
+      return {
+        catalogNumber: null,
+        reviewNotes,
+      };
+    }
+
+    const yearIndex = fileTokens.findIndex((token) =>
+      YEAR_TOKEN_REGEX.test(token),
+    );
+    const positionsAfterYear = [];
+    const allPositions = [];
+
+    for (let index = 0; index < fileTokens.length; index += 1) {
+      allPositions.push(index);
+
+      if (yearIndex >= 0 && index > yearIndex) {
+        positionsAfterYear.push(index);
+      }
+    }
+
+    if (yearIndex === -1) {
+      reviewNotes.push(
+        "Could not find a 19xx year in the file name. Catalog matching used fallback parsing.",
+      );
+    }
+
+    if (
+      fileTokens.some(
+        (token, index) => index > yearIndex && SIZE_TOKEN_REGEX.test(token),
+      )
+    ) {
+      reviewNotes.push(
+        "File name includes a size token after the year. Review the matched catalog number before upload.",
+      );
+    }
+
+    const leadingZeroMatch =
+      yearIndex >= 0
+        ? findCatalogMatchAtPositions(
+            catalogEntries,
+            fileTokens,
+            positionsAfterYear,
+            (entry) => entry.catalogTokens[0]?.startsWith("0"),
+          )
+        : null;
+
+    if (leadingZeroMatch) {
+      return {
+        catalogNumber: leadingZeroMatch,
+        reviewNotes,
+      };
+    }
+
+    const postYearMatch =
+      yearIndex >= 0
+        ? findCatalogMatchAtPositions(
+            catalogEntries,
+            fileTokens,
+            positionsAfterYear,
+          )
+        : null;
+
+    if (postYearMatch) {
+      reviewNotes.push(
+        "Matched a catalog number after the year, but it did not follow the usual leading-zero pattern.",
+      );
+      return {
+        catalogNumber: postYearMatch,
+        reviewNotes,
+      };
+    }
+
+    const fallbackPositionMatch = findCatalogMatchAtPositions(
+      catalogEntries,
+      fileTokens,
+      allPositions,
+    );
+
+    if (fallbackPositionMatch) {
+      reviewNotes.push(
+        "Matched the catalog number outside the expected position after the year. Review before upload.",
+      );
+      return {
+        catalogNumber: fallbackPositionMatch,
+        reviewNotes,
+      };
+    }
+
+    const compactFileName = fileTokens.join("");
+    const compactMatch = catalogEntries.find(
+      (entry) =>
+        entry.compactCatalog && compactFileName.includes(entry.compactCatalog),
+    );
+
+    if (compactMatch) {
+      reviewNotes.push(
+        "Matched the catalog number using compact fallback parsing. Review before upload.",
+      );
+    }
+
+    return {
+      catalogNumber: compactMatch ? compactMatch.catalog_number : null,
+      reviewNotes,
+    };
+  };
+}
+
+function countDuplicates(values = []) {
+  return values.reduce((counts, value) => {
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
 
 function sanitizeBulkValue(value) {
   if (value === null || value === undefined) return "";
@@ -128,27 +333,33 @@ async function validateBulkRows(rows = []) {
     });
 
     if (data.status && !BULK_STATUS_VALUES.includes(data.status)) {
-      issues.push(`status must be one of: ${BULK_STATUS_VALUES.join(", ")}.`);
+      issues.push(`Status must be one of: ${BULK_STATUS_VALUES.join(", ")}.`);
     }
 
     if (data.size && !BULK_SIZE_VALUES.includes(data.size)) {
-      issues.push(`size must be one of: ${BULK_SIZE_VALUES.join(", ")}.`);
+      issues.push(`Size must be one of: ${BULK_SIZE_VALUES.join(", ")}.`);
     }
 
-    if (data.catalog_number && duplicateCatalogNumbers.has(data.catalog_number)) {
-      issues.push("catalog number appears more than once in this file.");
+    if (
+      data.catalog_number &&
+      duplicateCatalogNumbers.has(data.catalog_number)
+    ) {
+      issues.push("Catalog number appears more than once in this file.");
     }
 
-    if (data.catalog_number && existingCatalogNumbers.has(data.catalog_number)) {
-      issues.push("catalog number already exists in the archive.");
+    if (
+      data.catalog_number &&
+      existingCatalogNumbers.has(data.catalog_number)
+    ) {
+      issues.push("Catalog number already exists in the archive.");
     }
 
     if (data.status !== "Sold" && data.date_sold) {
-      issues.push("date sold should only be set when status is Sold.");
+      issues.push("Date sold should only be set when status is Sold.");
     }
 
     if (data.category && !["Musicians", "Other"].includes(data.category)) {
-      issues.push("category must be one of: Musicians, Other.");
+      issues.push("Category must be one of: Musicians, Other.");
     }
 
     return {
@@ -167,6 +378,182 @@ async function validateBulkRows(rows = []) {
       totalRows: validatedRows.length,
       validRows,
       invalidRows: validatedRows.length - validRows,
+      duplicateFileCatalogs: duplicateCatalogNumbers.size,
+      existingCatalogDuplicates: existingCatalogNumbers.size,
+    },
+  };
+}
+
+async function validateBulkAssetFiles(assetType, files = []) {
+  const matchingPrints = await Print.findAll({
+    attributes: [
+      "catalog_number",
+      "size",
+      "blob_name",
+      "certificate_blob_name",
+    ],
+  });
+
+  const matchCatalogNumber = buildCatalogMatcher(matchingPrints);
+
+  const normalizedFiles = files.map((file, index) => {
+    const matchResult = matchCatalogNumber(file?.fileName || file?.name || "");
+
+    return {
+      rowNumber: Number.isInteger(file?.rowNumber) ? file.rowNumber : index + 1,
+      fileName: String(file?.fileName || file?.name || "").trim(),
+      content: file?.content || null,
+      catalogNumber: matchResult.catalogNumber,
+      reviewNotes: matchResult.reviewNotes,
+    };
+  });
+
+  const catalogNumbers = normalizedFiles
+    .map((file) => file.catalogNumber)
+    .filter(Boolean);
+
+  const fileNames = normalizedFiles
+    .map((file) => file.fileName)
+    .filter(Boolean);
+  const duplicateCatalogCounts = countDuplicates(catalogNumbers);
+  const duplicateFileNameCounts = countDuplicates(fileNames);
+
+  const duplicateCatalogNumbers = new Set(
+    Object.entries(duplicateCatalogCounts)
+      .filter(([, count]) => count > 1)
+      .map(([catalogNumber]) => catalogNumber),
+  );
+
+  const duplicateFileNames = new Set(
+    Object.entries(duplicateFileNameCounts)
+      .filter(([, count]) => count > 1)
+      .map(([fileName]) => fileName),
+  );
+
+  const printByCatalogNumber = new Map(
+    matchingPrints.map((print) => [print.catalog_number, print]),
+  );
+
+  const rows = normalizedFiles.map((file) => {
+    const catalogNumber = file.catalogNumber;
+    const fileExtension = getFileExtension(file.fileName);
+    const matchingPrint = printByCatalogNumber.get(catalogNumber);
+    const issues = [];
+    const reviewNotes = [...(file.reviewNotes || [])];
+
+    if (!file.fileName) {
+      issues.push("File name is required.");
+    }
+
+    if (!catalogNumber) {
+      if (assetType === "images") {
+        reviewNotes.push(
+          "Could not match any existing catalog number from the file name. This file can be reviewed and uploaded later after a matching print record exists.",
+        );
+      } else {
+        issues.push(
+          "Could not match any existing catalog number from the file name.",
+        );
+      }
+    }
+
+    if (catalogNumber && duplicateCatalogNumbers.has(catalogNumber)) {
+      issues.push(
+        "Catalog number appears more than once in the selected folder.",
+      );
+    }
+
+    if (file.fileName && duplicateFileNames.has(file.fileName)) {
+      issues.push("File name appears more than once in the selected folder.");
+    }
+
+    if (!matchingPrint) {
+      if (assetType === "images") {
+        reviewNotes.push(
+          "No matching print found for this catalog number. This image will be skipped until a matching print record exists.",
+        );
+      } else {
+        issues.push("No matching print found for this catalog number.");
+      }
+    }
+
+    if (assetType === "images") {
+      if (!IMAGE_EXTENSIONS.includes(fileExtension)) {
+        issues.push(
+          "Image files must be jpg, jpeg, png, webp, gif, bmp, tif, or tiff.",
+        );
+      }
+
+      if (matchingPrint?.blob_name) {
+        issues.push("Print already has an image associated with it.");
+      }
+    }
+
+    if (assetType === "certificates") {
+      if (WORD_EXTENSIONS.includes(fileExtension)) {
+        issues.push("Word files must be converted to PDF before upload.");
+      } else if (fileExtension !== "pdf") {
+        issues.push("Certificate files must be PDF.");
+      }
+
+      if (matchingPrint?.certificate_blob_name) {
+        issues.push("Print already has a certificate associated with it.");
+      }
+    }
+
+    return {
+      rowNumber: file.rowNumber,
+      fileName: file.fileName,
+      catalogNumber,
+      assetType,
+      issues,
+      reviewNotes,
+      canImport: issues.length === 0,
+    };
+  });
+
+  const validFiles = rows.filter((row) => row.canImport).length;
+  const missingPrints = rows.filter((row) =>
+    row.issues.includes("No matching print found for this catalog number."),
+  ).length;
+  const duplicateCatalogEntries = rows.filter((row) =>
+    row.issues.includes(
+      "Catalog number appears more than once in the selected folder.",
+    ),
+  ).length;
+  const duplicateFileEntries = rows.filter((row) =>
+    row.issues.includes(
+      "File name appears more than once in the selected folder.",
+    ),
+  ).length;
+  const existingAssetDuplicates = rows.filter((row) =>
+    row.issues.some((issue) => issue.includes("already has")),
+  ).length;
+  const conversionRequired = rows.filter((row) =>
+    row.issues.includes("Word files must be converted to PDF before upload."),
+  ).length;
+  const reviewFlaggedFiles = rows.filter(
+    (row) => row.reviewNotes?.length,
+  ).length;
+  const unmatchedFiles = rows.filter(
+    (row) =>
+      !row.catalogNumber ||
+      row.issues.includes("No matching print found for this catalog number."),
+  ).length;
+
+  return {
+    rows,
+    summary: {
+      totalFiles: rows.length,
+      validFiles,
+      invalidFiles: rows.length - validFiles,
+      duplicateCatalogEntries,
+      duplicateFileEntries,
+      existingAssetDuplicates,
+      missingPrints,
+      conversionRequired,
+      reviewFlaggedFiles,
+      unmatchedFiles,
     },
   };
 }
@@ -217,7 +604,8 @@ router.post(
   async (req, res, next) => {
     const errors = validationResult(req);
 
-    if (!errors.isEmpty()) return res.status(400).json({ error: errors.array() });
+    if (!errors.isEmpty())
+      return res.status(400).json({ error: errors.array() });
 
     try {
       let imageUrl = null;
@@ -303,6 +691,42 @@ router.post("/bulk/validate", async (req, res, next) => {
   }
 });
 
+router.post("/bulk/assets/validate", async (req, res, next) => {
+  try {
+    const assetType = req.body?.assetType;
+    const files = Array.isArray(req.body?.files) ? req.body.files : [];
+
+    if (!["images", "certificates"].includes(assetType)) {
+      return res.status(400).json({
+        message: "assetType must be either images or certificates.",
+      });
+    }
+
+    if (!files.length) {
+      return res.status(400).json({
+        message: "Provide at least one file to validate.",
+        rows: [],
+        summary: {
+          totalFiles: 0,
+          validFiles: 0,
+          invalidFiles: 0,
+          duplicateCatalogEntries: 0,
+          duplicateFileEntries: 0,
+          existingAssetDuplicates: 0,
+          missingPrints: 0,
+          conversionRequired: 0,
+        },
+      });
+    }
+
+    const validation = await validateBulkAssetFiles(assetType, files);
+    res.status(200).json(validation);
+  } catch (error) {
+    console.error("Error validating bulk assets", error);
+    next(error);
+  }
+});
+
 router.post("/bulk/import", async (req, res, next) => {
   try {
     const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
@@ -324,6 +748,8 @@ router.post("/bulk/import", async (req, res, next) => {
     }
 
     const importedCatalogNumbers = [];
+    let skippedCount = 0;
+    const skippedFiles = [];
 
     for (const row of validation.rows) {
       const createdPrint = await Print.create({
@@ -351,6 +777,219 @@ router.post("/bulk/import", async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error importing bulk upload", error);
+    next(error);
+  }
+});
+
+router.post("/bulk/images/import", async (req, res, next) => {
+  try {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+
+    if (!rows.length) {
+      return res.status(400).json({
+        message: "Provide at least one reviewed row to import.",
+      });
+    }
+
+    const rowsForValidation = rows.map((row, index) => ({
+      rowNumber: Number.isInteger(row?.rowNumber) ? row.rowNumber : index + 1,
+      data: row?.data || row,
+    }));
+
+    const validation = await validateBulkRows(rowsForValidation);
+    const invalidRows = validation.rows.filter((row) => !row.canImport);
+
+    if (invalidRows.length) {
+      return res.status(400).json({
+        message: "Resolve validation issues before importing images.",
+        ...validation,
+      });
+    }
+
+    const rowSourceByNumber = new Map(
+      rows.map((row, index) => [
+        Number.isInteger(row?.rowNumber) ? row.rowNumber : index + 1,
+        row,
+      ]),
+    );
+
+    const missingImageRows = validation.rows.filter((row) => {
+      const source = rowSourceByNumber.get(row.rowNumber);
+      return !source?.image;
+    });
+
+    if (missingImageRows.length) {
+      return res.status(400).json({
+        message: "Each selected row must include an image file.",
+        missingImageRows: missingImageRows.map((row) => row.rowNumber),
+      });
+    }
+
+    const importedCatalogNumbers = [];
+
+    for (const row of validation.rows) {
+      const source = rowSourceByNumber.get(row.rowNumber);
+      const containerName = resolveContainer(row.data.size);
+
+      if (!containerName) {
+        return res.status(400).json({
+          message: `Unable to resolve image container for size ${row.data.size}.`,
+        });
+      }
+
+      const ext = getBlobExtension(source.image);
+      const blobName = `${row.data.catalog_number}-${uuidv4()}.${ext}`;
+      const imageUrl = await uploadToAzure(
+        containerName,
+        blobName,
+        source.image,
+      );
+
+      const createdPrint = await Print.create({
+        ...row.data,
+        image: imageUrl,
+        blob_name: blobName,
+        certificate: null,
+        certificate_blob_name: null,
+      });
+
+      importedCatalogNumbers.push(createdPrint.catalog_number);
+
+      await logPrintChange({
+        action: "CREATE",
+        catalogNumber: createdPrint.catalog_number,
+        description: `Bulk imported print ${createdPrint.catalog_number} with image for ${createdPrint.artist}.`,
+        req,
+      });
+    }
+
+    res.status(201).json({
+      message: `Imported ${importedCatalogNumbers.length} image record(s) successfully.`,
+      importedCount: importedCatalogNumbers.length,
+      importedCatalogNumbers,
+    });
+  } catch (error) {
+    console.error("Error importing bulk images", error);
+    next(error);
+  }
+});
+
+router.post("/bulk/assets/import", async (req, res, next) => {
+  try {
+    const assetType = req.body?.assetType;
+    const files = Array.isArray(req.body?.files) ? req.body.files : [];
+
+    if (!["images", "certificates"].includes(assetType)) {
+      return res.status(400).json({
+        message: "assetType must be either images or certificates.",
+      });
+    }
+
+    if (!files.length) {
+      return res.status(400).json({
+        message: "Provide at least one reviewed file to import.",
+      });
+    }
+
+    const validation = await validateBulkAssetFiles(assetType, files);
+    const invalidRows = validation.rows.filter((row) => !row.canImport);
+
+    if (invalidRows.length) {
+      return res.status(400).json({
+        message: "Resolve validation issues before importing files.",
+        ...validation,
+      });
+    }
+
+    const importedCatalogNumbers = [];
+    let skippedCount = 0;
+    const skippedFiles = [];
+    const validatedRowsByNumber = new Map(
+      validation.rows.map((row) => [row.rowNumber, row]),
+    );
+
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      const rowNumber = Number.isInteger(file?.rowNumber)
+        ? file.rowNumber
+        : index + 1;
+      const catalogNumber = validatedRowsByNumber.get(rowNumber)?.catalogNumber;
+
+      if (!catalogNumber) {
+        skippedCount += 1;
+        skippedFiles.push(file.fileName || file.name || `Row ${rowNumber}`);
+        continue;
+      }
+
+      const print = await Print.findOne({
+        where: {
+          catalog_number: catalogNumber,
+        },
+      });
+
+      if (!print) {
+        skippedCount += 1;
+        skippedFiles.push(file.fileName || file.name || `Row ${rowNumber}`);
+        continue;
+      }
+
+      const ext = getFileExtension(file.fileName || file.name);
+
+      if (assetType === "images") {
+        const containerName = resolveContainer(print.size);
+        if (!containerName) {
+          continue;
+        }
+
+        const blobName = `${catalogNumber}-${uuidv4()}.${ext}`;
+        const imageUrl = await uploadToAzure(
+          containerName,
+          blobName,
+          file.content,
+        );
+
+        await print.update({
+          image: imageUrl,
+          blob_name: blobName,
+        });
+      }
+
+      if (assetType === "certificates") {
+        const certificateBlobName = `cert-${catalogNumber}-${uuidv4()}.${ext}`;
+        const certificateUrl = await uploadToAzure(
+          CERTIFICATE_CONTAINER,
+          certificateBlobName,
+          file.content,
+        );
+
+        await print.update({
+          certificate: certificateUrl,
+          certificate_blob_name: certificateBlobName,
+        });
+      }
+
+      importedCatalogNumbers.push(catalogNumber);
+
+      await logPrintChange({
+        action: "UPDATE",
+        catalogNumber,
+        description: `Bulk uploaded ${assetType === "images" ? "image" : "certificate"} for print ${catalogNumber}.`,
+        req,
+      });
+    }
+
+    res.status(201).json({
+      message:
+        skippedCount > 0
+          ? `Imported ${importedCatalogNumbers.length} ${assetType} file(s). Skipped ${skippedCount} unmatched file(s).`
+          : `Imported ${importedCatalogNumbers.length} ${assetType} file(s) successfully.`,
+      importedCount: importedCatalogNumbers.length,
+      importedCatalogNumbers,
+      skippedCount,
+      skippedFiles,
+    });
+  } catch (error) {
+    console.error("Error importing bulk assets", error);
     next(error);
   }
 });
@@ -416,7 +1055,8 @@ router.get("/change-log", async (req, res, next) => {
     const formattedLogs = logs.map((log) => {
       const email =
         log.changed_by && log.changed_by.includes("@") ? log.changed_by : "N/A";
-      const name = email !== "N/A" ? userByEmail.get(email) || "Unknown User" : "System";
+      const name =
+        email !== "N/A" ? userByEmail.get(email) || "Unknown User" : "System";
 
       return {
         ...log.toJSON(),
@@ -502,7 +1142,8 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
     let certificateUrl = print.certificate;
     let certificateBlobName = print.certificate_blob_name;
 
-    const isNewImage = req.body.image && req.body.image.startsWith("data:image");
+    const isNewImage =
+      req.body.image && req.body.image.startsWith("data:image");
     const isNewCertificate =
       req.body.certificate && req.body.certificate.startsWith("data:");
 
@@ -521,7 +1162,11 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
 
       const ext = getBlobExtension(req.body.image);
       const newBlobName = `${uuidv4()}.${ext}`;
-      imageUrl = await uploadToAzure(containerName, newBlobName, req.body.image);
+      imageUrl = await uploadToAzure(
+        containerName,
+        newBlobName,
+        req.body.image,
+      );
       blobName = newBlobName;
 
       if (print.blob_name) {
@@ -566,7 +1211,9 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
       notes: req.body.notes,
       date_sold: req.body.date_sold,
       category:
-        req.body.category !== undefined ? req.body.category || null : print.category,
+        req.body.category !== undefined
+          ? req.body.category || null
+          : print.category,
       signed:
         req.body.signed !== undefined
           ? req.body.signed === true || req.body.signed === "true"

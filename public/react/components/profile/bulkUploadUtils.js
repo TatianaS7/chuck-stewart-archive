@@ -58,6 +58,44 @@ export async function requestBulkValidation(rows) {
   return data;
 }
 
+export async function requestBulkAssetValidation(assetType, files) {
+  const res = await fetch(`${apiURL}/prints/bulk/assets/validate`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ assetType, files }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Unable to validate bulk assets.");
+  }
+
+  return data;
+}
+
+export async function requestBulkImageImport(rows) {
+  const res = await fetch(`${apiURL}/prints/bulk/images/import`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ rows }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Unable to import bulk images.");
+  }
+
+  return data;
+}
+
 export async function parseSelectedFile(file) {
   const fileText = await file.text();
 
@@ -86,6 +124,122 @@ export async function parseSelectedFile(file) {
   return {
     rows,
     warnings,
+  };
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () =>
+      reject(new Error(`Unable to read file ${file.name}.`));
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function parseSelectedAssetFiles(fileList) {
+  const files = Array.from(fileList || []);
+
+  if (!files.length) {
+    throw new Error("The selected folder did not contain any files.");
+  }
+
+  const parsedFiles = await Promise.all(
+    files.map(async (file, index) => ({
+      rowNumber: index + 1,
+      fileName: file.name,
+      content: await readFileAsDataUrl(file),
+    })),
+  );
+
+  return {
+    files: parsedFiles,
+    warnings: [],
+  };
+}
+
+function parseImageFileName(fileName) {
+  const baseName = String(fileName || "")
+    .replace(/\.[^.]+$/, "")
+    .trim();
+
+  const tokens = baseName
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  const yearIndex = tokens.findIndex((token) => /^19\d{2}$/.test(token));
+  const year = yearIndex >= 0 ? tokens[yearIndex] : "";
+
+  let catalogNumber = "";
+  if (yearIndex >= 0) {
+    const afterYear = tokens.slice(yearIndex + 1);
+    const preferredCatalog = afterYear.find((token) =>
+      /^0[\w-]*$/i.test(token),
+    );
+    const fallbackCatalog = afterYear.find((token) =>
+      /^\d[\w-]*$/i.test(token),
+    );
+    catalogNumber = preferredCatalog || fallbackCatalog || "";
+  }
+
+  const sizeToken = tokens.find((token) => /^(11x14c?|16x20)$/i.test(token));
+  const normalizedSize = sizeToken
+    ? sizeToken.toLowerCase() === "11x14c"
+      ? "11x14C"
+      : sizeToken.toLowerCase()
+    : "";
+
+  const artistTokens = yearIndex > 0 ? tokens.slice(0, yearIndex) : [];
+  const artist = artistTokens.join(" ");
+
+  return {
+    status: "Available",
+    catalog_number: catalogNumber,
+    artist,
+    date: year,
+    size: normalizedSize,
+    category: "",
+    signed: false,
+    location: "",
+    instrument: "",
+    notes: "",
+    date_sold: "",
+  };
+}
+
+export async function parseSelectedImageFiles(fileList) {
+  const files = Array.from(fileList || []);
+
+  if (!files.length) {
+    throw new Error("The selected folder did not contain any files.");
+  }
+
+  const parsedFiles = await Promise.all(
+    files.map(async (file, index) => {
+      const rowNumber = index + 1;
+      return {
+        rowNumber,
+        fileName: file.name,
+        content: await readFileAsDataUrl(file),
+        data: parseImageFileName(file.name),
+      };
+    }),
+  );
+
+  const rows = parsedFiles.map((file) => ({
+    rowNumber: file.rowNumber,
+    data: file.data,
+  }));
+
+  return {
+    files: parsedFiles.map(({ rowNumber, fileName, content }) => ({
+      rowNumber,
+      fileName,
+      content,
+    })),
+    rows,
+    warnings: [],
   };
 }
 

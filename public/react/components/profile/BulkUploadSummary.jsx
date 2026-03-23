@@ -1,32 +1,19 @@
 import React from "react";
 
-function BulkUploadSummary({ validationSummary, selectedRowCount }) {
-  if (!validationSummary) return null;
+function BulkUploadSummary({ summaryItems }) {
+  if (!summaryItems?.length) return null;
 
   return (
     <div className="bulk-upload-summary-grid">
-      <div className="bulk-upload-summary-block">
-        <span className="bulk-upload-summary-value">
-          {validationSummary.totalRows}
-        </span>
-        <span className="bulk-upload-summary-label">Parsed Rows</span>
-      </div>
-      <div className="bulk-upload-summary-block is-valid">
-        <span className="bulk-upload-summary-value">
-          {validationSummary.validRows}
-        </span>
-        <span className="bulk-upload-summary-label">Valid Rows</span>
-      </div>
-      <div className="bulk-upload-summary-block is-invalid">
-        <span className="bulk-upload-summary-value">
-          {validationSummary.invalidRows}
-        </span>
-        <span className="bulk-upload-summary-label">Needs Review</span>
-      </div>
-      <div className="bulk-upload-summary-block">
-        <span className="bulk-upload-summary-value">{selectedRowCount}</span>
-        <span className="bulk-upload-summary-label">Selected To Save</span>
-      </div>
+      {summaryItems.map((item) => (
+        <div
+          key={item.label}
+          className={`bulk-upload-summary-block ${item.tone ? `is-${item.tone}` : ""}`}
+        >
+          <span className="bulk-upload-summary-value">{item.value}</span>
+          <span className="bulk-upload-summary-label">{item.label}</span>
+        </div>
+      ))}
     </div>
   );
 }

@@ -1,532 +1,562 @@
 .view-title {
-    background: none;
-    border: none;
-    color: white;
-    font-weight: lighter;
-    font-size: 16pt;
-    text-align: center;
-    margin-bottom: 2em
+  background: none;
+  border: none;
+  color: white;
+  font-weight: lighter;
+  font-size: 16pt;
+  text-align: center;
+  margin-bottom: 2em;
 }
 
 .view-title:focus {
-    border-bottom: white solid 1pt;
+  border-bottom: white solid 1pt;
 }
 
-
 /* PROFILE VIEW STYLES */
-#user-profile-data, #password-div {
-    color: white;
+#user-profile-data,
+#password-div {
+  color: white;
 }
 
 #profile-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 2em;
-    margin: 2em 6em;
-    align-items: start;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2em;
+  margin: 2em 6em;
+  align-items: start;
 }
 
 #admin-panel {
-    background-color: rgba(128, 128, 128, 0.22);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 8px;
-    padding: 1em;
+  background-color: rgba(128, 128, 128, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 1em;
 }
 
 #admin-panel-title {
-    color: white;
-    margin-bottom: 1em;
+  color: white;
+  margin-bottom: 1em;
 }
 
 #admin-panel-buttons {
-    display: grid;
-    gap: 0.6em;
+  display: grid;
+  gap: 0.6em;
 }
 
 .admin-panel-btn {
-    text-align: left;
-    background-color: transparent;
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 6px;
-    padding: 0.55em 0.8em;
+  text-align: left;
+  background-color: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+  padding: 0.55em 0.8em;
 }
 
 .admin-panel-btn:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .admin-panel-btn.is-active {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-color: white;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: white;
 }
 
 #user-data-div {
-    display: flex;
-    justify-content: space-between;
-    gap: 2em;
-    color: white;
-    background-color: rgba(128, 128, 128, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 1.4em;
+  display: flex;
+  justify-content: space-between;
+  gap: 2em;
+  color: white;
+  background-color: rgba(128, 128, 128, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 1.4em;
 }
 
 #user-profile-data p {
-    background-color: rgba(128, 128, 128, 0.395);
-    width: 12em;
-    padding: 8px;
-    border-radius: 5px;
+  background-color: rgba(128, 128, 128, 0.395);
+  width: 12em;
+  padding: 8px;
+  border-radius: 5px;
 }
 
 #updatePW {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 #updatePW input {
-    border-radius: 5px;
-    border-width: 1pt;
-    height: 2em;
+  border-radius: 5px;
+  border-width: 1pt;
+  height: 2em;
 }
 
 #change-response {
-    padding-top: 1em;
-    text-align: center;
+  padding-top: 1em;
+  text-align: center;
 }
 
 .admin-section-card {
-    color: white;
+  color: white;
 }
 
 #profile-overview-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 1.2em;
-    width: 100%;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.2em;
+  width: 100%;
 }
 
 .profile-card {
-    background: linear-gradient(150deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.07));
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    padding: 1.1em;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.07)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 1.1em;
 }
 
 .profile-card-title {
-    margin-bottom: 0.2em;
+  margin-bottom: 0.2em;
 }
 
 .profile-subtle {
-    margin-bottom: 1em;
-    opacity: 0.8;
-    font-size: 0.95rem;
+  margin-bottom: 1em;
+  opacity: 0.8;
+  font-size: 0.95rem;
 }
 
 .profile-header-row {
-    display: flex;
-    align-items: center;
-    gap: 0.8em;
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
 }
 
 .profile-avatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.2);
-    display: grid;
-    place-items: center;
-    font-size: 1.2rem;
-    font-weight: 700;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 .profile-data-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8em;
-    margin-top: 0.9em;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8em;
+  margin-top: 0.9em;
 }
 
 .profile-data-grid p {
-    background-color: rgba(255, 255, 255, 0.12);
-    margin: 0.25em 0 0;
-    border-radius: 6px;
-    padding: 0.45em 0.55em;
+  background-color: rgba(255, 255, 255, 0.12);
+  margin: 0.25em 0 0;
+  border-radius: 6px;
+  padding: 0.45em 0.55em;
 }
 
 .profile-quick-actions {
-    margin-top: 1em;
-    display: flex;
-    gap: 0.7em;
+  margin-top: 1em;
+  display: flex;
+  gap: 0.7em;
 }
 
 .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.7em;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7em;
 }
 
 .stat-block {
-    background-color: rgba(255, 255, 255, 0.11);
-    border-radius: 8px;
-    padding: 0.7em;
-    display: flex;
-    flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.11);
+  border-radius: 8px;
+  padding: 0.7em;
+  display: flex;
+  flex-direction: column;
 }
 
 .stat-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1.2;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .stat-label {
-    opacity: 0.85;
-    font-size: 0.9rem;
+  opacity: 0.85;
+  font-size: 0.9rem;
 }
 
 .profile-health-row {
-    margin-top: 1em;
-    padding-top: 0.8em;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  margin-top: 1em;
+  padding-top: 0.8em;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .health-pill {
-    border-radius: 999px;
-    padding: 0.2em 0.7em;
-    background-color: rgba(48, 196, 112, 0.35);
-    border: 1px solid rgba(48, 196, 112, 0.6);
-    font-size: 0.85rem;
+  border-radius: 999px;
+  padding: 0.2em 0.7em;
+  background-color: rgba(48, 196, 112, 0.35);
+  border: 1px solid rgba(48, 196, 112, 0.6);
+  font-size: 0.85rem;
 }
 
 .admin-list {
-    margin-top: 0.8em;
+  margin-top: 0.8em;
 }
 
 .log-filters-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(180px, 1fr));
-    gap: 0.7em;
-    margin: 0.9em 0 1em;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 0.7em;
+  margin: 0.9em 0 1em;
 }
 
 .log-filters-grid input,
 .log-filters-grid select {
-    border-radius: 5px;
-    border: none;
-    padding: 0.5em 0.65em;
+  border-radius: 5px;
+  border: none;
+  padding: 0.5em 0.65em;
 }
 
 .change-log-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 430px;
-    margin-top: 0.8em;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 430px;
+  margin-top: 0.8em;
 }
 
 .change-log-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: white;
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
 }
 
 .change-log-table th,
 .change-log-table td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 0.55em 0.65em;
-    vertical-align: top;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.55em 0.65em;
+  vertical-align: top;
 }
 
 .change-log-table th {
-    background-color: rgba(255, 255, 255, 0.12);
-    font-weight: 600;
-    text-align: left;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+  background-color: rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .change-log-table tbody tr:nth-child(even) {
-    background-color: rgba(255, 255, 255, 0.04);
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .log-sort-btn {
-    width: 100%;
-    border: none;
-    background: transparent;
-    color: white;
-    text-align: left;
-    font-weight: 600;
-    padding: 0;
-    cursor: pointer;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: white;
+  text-align: left;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
 }
 
 .log-sort-btn:hover {
-    opacity: 0.9;
+  opacity: 0.9;
 }
 
 .admin-placeholder-row {
-    display: flex;
-    gap: 0.8em;
-    margin-top: 0.8em;
+  display: flex;
+  gap: 0.8em;
+  margin-top: 0.8em;
 }
 
 .admin-placeholder-row input {
-    min-width: 260px;
-    border-radius: 5px;
-    border: none;
-    padding: 0.45em 0.7em;
+  min-width: 260px;
+  border-radius: 5px;
+  border: none;
+  padding: 0.45em 0.7em;
 }
 
 .admin-subtle {
-    opacity: 0.85;
-    font-style: italic;
+  opacity: 0.85;
+  font-style: italic;
 }
 
 .bulk-upload-card {
-    background-color: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 0.9em;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7em;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
 }
 
 .bulk-upload-card input[type="file"] {
-    color: white;
+  color: white;
+}
+
+.bulk-upload-mode-select {
+  max-width: 280px;
+  border-radius: 6px;
+  border: none;
+  padding: 0.5em 0.65em;
+  background-color: white;
+  color: #111;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .bulk-upload-actions {
-    display: flex;
-    gap: 0.7em;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 0.7em;
+  flex-wrap: wrap;
 }
 
 .bulk-upload-filename {
-    margin: 0;
-    font-size: 0.95rem;
-    opacity: 0.9;
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
 }
 
 .bulk-upload-status {
-    border-radius: 8px;
-    padding: 0.8em 0.9em;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.8em 0.9em;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .bulk-upload-status-phase {
-    margin: 0 0 0.2em;
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.8;
+  margin: 0 0 0.2em;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .bulk-upload-status-message {
-    margin: 0;
+  margin: 0;
 }
 
 .bulk-upload-status-working {
-    border-color: rgba(255, 214, 102, 0.55);
-    background-color: rgba(255, 214, 102, 0.12);
+  border-color: rgba(255, 214, 102, 0.55);
+  background-color: rgba(255, 214, 102, 0.12);
 }
 
 .bulk-upload-status-success {
-    border-color: rgba(78, 205, 153, 0.55);
-    background-color: rgba(78, 205, 153, 0.12);
+  border-color: rgba(78, 205, 153, 0.55);
+  background-color: rgba(78, 205, 153, 0.12);
 }
 
 .bulk-upload-status-warning {
-    border-color: rgba(255, 160, 122, 0.55);
-    background-color: rgba(255, 160, 122, 0.12);
+  border-color: rgba(255, 160, 122, 0.55);
+  background-color: rgba(255, 160, 122, 0.12);
 }
 
 .bulk-upload-status-error {
-    border-color: rgba(255, 107, 107, 0.6);
-    background-color: rgba(255, 107, 107, 0.14);
+  border-color: rgba(255, 107, 107, 0.6);
+  background-color: rgba(255, 107, 107, 0.14);
 }
 
 .bulk-upload-progress {
-    width: 100%;
-    height: 8px;
-    background-color: rgba(255, 255, 255, 0.14);
-    border-radius: 999px;
-    overflow: hidden;
-    margin-top: 0.8em;
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.8em;
 }
 
 .bulk-upload-progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, rgba(255, 214, 102, 0.85), rgba(255, 255, 255, 0.95));
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 214, 102, 0.85),
+    rgba(255, 255, 255, 0.95)
+  );
 }
 
 .bulk-upload-summary-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(120px, 1fr));
-    gap: 0.7em;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 0.7em;
 }
 
 .bulk-upload-summary-block {
-    background-color: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 8px;
-    padding: 0.75em;
-    display: flex;
-    flex-direction: column;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 0.75em;
+  display: flex;
+  flex-direction: column;
 }
 
 .bulk-upload-summary-block.is-valid {
-    border-color: rgba(78, 205, 153, 0.55);
+  border-color: rgba(78, 205, 153, 0.55);
 }
 
 .bulk-upload-summary-block.is-invalid {
-    border-color: rgba(255, 107, 107, 0.55);
+  border-color: rgba(255, 107, 107, 0.55);
 }
 
 .bulk-upload-summary-value {
-    font-size: 1.35rem;
-    font-weight: 700;
-    line-height: 1.1;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .bulk-upload-summary-label {
-    opacity: 0.82;
-    font-size: 0.9rem;
+  opacity: 0.82;
+  font-size: 0.9rem;
 }
 
 .bulk-upload-warning-box {
-    border: 1px solid rgba(255, 160, 122, 0.5);
-    background-color: rgba(255, 160, 122, 0.12);
-    border-radius: 8px;
-    padding: 0.75em 0.9em;
+  border: 1px solid rgba(255, 160, 122, 0.5);
+  background-color: rgba(255, 160, 122, 0.12);
+  border-radius: 8px;
+  padding: 0.75em 0.9em;
 }
 
 .bulk-upload-review-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 1em;
-    align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  align-items: flex-start;
 }
 
 .bulk-upload-review-header p {
-    margin: 0.2em 0 0;
+  margin: 0.2em 0 0;
 }
 
 .bulk-upload-review-totals {
-    display: flex;
-    gap: 0.8em;
-    flex-wrap: wrap;
-    opacity: 0.9;
+  display: flex;
+  gap: 0.8em;
+  flex-wrap: wrap;
+  opacity: 0.9;
 }
 
 .bulk-upload-review-table-wrapper {
-    width: 100%;
-    overflow: auto;
-    max-height: 520px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 8px;
+  width: 100%;
+  overflow: auto;
+  max-height: 520px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
 }
 
 .bulk-upload-review-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: white;
-    min-width: 1320px;
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+  min-width: 1320px;
+}
+
+.bulk-upload-asset-table {
+  min-width: 980px;
 }
 
 .bulk-upload-review-table th,
 .bulk-upload-review-table td {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    padding: 0.55em;
-    vertical-align: top;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 0.55em;
+  vertical-align: top;
 }
 
 .bulk-upload-review-table th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: rgba(18, 18, 18, 0.92);
-    text-transform: capitalize;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: rgba(18, 18, 18, 0.92);
+  text-transform: capitalize;
 }
 
 .bulk-upload-review-table tbody tr:nth-child(even) {
-    background-color: rgba(255, 255, 255, 0.04);
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .bulk-upload-review-table input[type="text"],
 .bulk-upload-review-table select {
-    width: 100%;
-    min-width: 130px;
-    border-radius: 5px;
-    border: none;
-    padding: 0.45em 0.55em;
+  width: 100%;
+  min-width: 130px;
+  border-radius: 5px;
+  border: none;
+  padding: 0.45em 0.55em;
 }
 
 .bulk-upload-validation-pill {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    padding: 0.2em 0.7em;
-    font-size: 0.82rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2em 0.7em;
+  font-size: 0.82rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .bulk-upload-validation-pill.is-valid {
-    background-color: rgba(78, 205, 153, 0.16);
-    border-color: rgba(78, 205, 153, 0.5);
+  background-color: rgba(78, 205, 153, 0.16);
+  border-color: rgba(78, 205, 153, 0.5);
 }
 
 .bulk-upload-validation-pill.is-invalid {
-    background-color: rgba(255, 107, 107, 0.16);
-    border-color: rgba(255, 107, 107, 0.5);
+  background-color: rgba(255, 107, 107, 0.16);
+  border-color: rgba(255, 107, 107, 0.5);
 }
 
 .bulk-upload-issues-list {
-    margin: 0;
-    padding-left: 1.1em;
+  margin: 0;
+  padding-left: 1.1em;
 }
 
 .bulk-upload-no-issues {
-    opacity: 0.85;
+  opacity: 0.85;
+}
+
+.bulk-upload-source-file {
+  display: inline-block;
+  max-width: 220px;
+  word-break: break-word;
+  opacity: 0.92;
 }
 
 @media (max-width: 980px) {
-    #profile-layout {
-        grid-template-columns: 1fr;
-        margin: 2em 1.2em;
-    }
+  #profile-layout {
+    grid-template-columns: 1fr;
+    margin: 2em 1.2em;
+  }
 
-    #user-data-div {
-        flex-direction: column;
-    }
+  #user-data-div {
+    flex-direction: column;
+  }
 
-    .log-filters-grid {
-        grid-template-columns: 1fr;
-    }
+  .log-filters-grid {
+    grid-template-columns: 1fr;
+  }
 
-    #profile-overview-grid {
-        grid-template-columns: 1fr;
-    }
+  #profile-overview-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .profile-data-grid {
-        grid-template-columns: 1fr;
-    }
+  .profile-data-grid {
+    grid-template-columns: 1fr;
+  }
 
-    .profile-quick-actions {
-        flex-direction: column;
-    }
+  .profile-quick-actions {
+    flex-direction: column;
+  }
 
-    .bulk-upload-summary-grid {
-        grid-template-columns: 1fr 1fr;
-    }
+  .bulk-upload-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 
-    .bulk-upload-review-header {
-        flex-direction: column;
-    }
+  .bulk-upload-review-header {
+    flex-direction: column;
+  }
 }

@@ -5,6 +5,7 @@ function BulkUploadReviewTable({
   reviewRows,
   selectedRowCount,
   invalidRowCount,
+  showSourceFileName = false,
   onRowSelectionChange,
   onRowFieldChange,
 }) {
@@ -33,6 +34,7 @@ function BulkUploadReviewTable({
               <th>Save</th>
               <th>Row</th>
               <th>Validation</th>
+              {showSourceFileName && <th>Source File</th>}
               {editableFields.map((field) => (
                 <th key={field}>{field.replace("_", " ")}</th>
               ))}
@@ -60,6 +62,11 @@ function BulkUploadReviewTable({
                     {row.canImport ? "Ready" : "Needs Fix"}
                   </span>
                 </td>
+                {showSourceFileName && (
+                  <td>
+                    <span className="bulk-upload-source-file">{row.sourceFileName || "-"}</span>
+                  </td>
+                )}
                 {editableFields.map((field) => (
                   <td key={`${row.rowNumber}-${field}`}>
                     {field === "status" ? (

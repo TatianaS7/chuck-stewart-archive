@@ -80,7 +80,7 @@ function PrintCard({ print, onEdit, onDelete }) {
                 </div>
             </div>
 
-            <Modal show={showCertificatePreview} onHide={handleCloseCertificatePreview} centered>
+            <Modal show={showCertificatePreview} onHide={handleCloseCertificatePreview} centered size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>Certificate Preview</Modal.Title>
                 </Modal.Header>
@@ -108,25 +108,6 @@ function PrintCard({ print, onEdit, onDelete }) {
                                     No certificate file is associated with this print yet.
                                 </p>
                             )}
-                        <p className="certificate-preview-subtle">Placeholder preview. Print/download actions are not wired yet.</p>
-                        <div className="certificate-action-row">
-                            <button
-                                type="button"
-                                className="btn btn-outline-dark certificate-action-btn"
-                                onClick={() => handlePlaceholderAction("Print")}
-                            >
-                                <IoIosPrint />
-                                Print
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-outline-dark certificate-action-btn"
-                                onClick={() => handlePlaceholderAction("Download")}
-                            >
-                                <IoIosDownload />
-                                Download
-                            </button>
-                        </div>
                     </div>
                 </Modal.Body>
             </Modal>
