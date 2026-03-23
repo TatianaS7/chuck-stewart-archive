@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import apiURL from "../../api";
+import { buildAuthHeaders } from "../../authToken";
 
 function ChangeLogSection() {
   const [changeLog, setChangeLog] = useState([]);
@@ -35,7 +36,7 @@ function ChangeLogSection() {
           : `${apiURL}/prints/change-log`;
 
         const res = await fetch(url, {
-          credentials: "include",
+          headers: buildAuthHeaders(),
         });
         const data = await res.json();
         setChangeLog(Array.isArray(data) ? data : []);

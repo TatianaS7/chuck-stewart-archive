@@ -1,189 +1,195 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../models/user');
-const { check, validationResult } = require('express-validator');
-const bcrypt = require('bcrypt');
+const User = require("../models/user");
+const { check, validationResult } = require("express-validator");
+const bcrypt = require("bcrypt");
+const { signAuthToken } = require("../utils/jwt");
+const { requireAuth } = require("../middleware/requireAuth");
 
+function sanitizeUser(user) {
+  if (!user) return null;
+
+  return {
+    id: user.id,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    email: user.email,
+  };
+}
 
 // Create Account
-router.post('/', async (req, res, next) => {
-    try {
-        const userData = {
-            first_name: req.body.first_name,
-            last_name: req.body.last_name,
-            email: req.body.email,
-        }
-        const userPassword = req.body.password;
+router.post("/", async (req, res, next) => {
+  try {
+    const userData = {
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      email: req.body.email,
+    };
+    const userPassword = req.body.password;
 
-        const checkExistingUser = await User.findAll({
-            where: {
-                email: userData.email
-            }
-        })
+    const checkExistingUser = await User.findAll({
+      where: {
+        email: userData.email,
+      },
+    });
 
-        if (checkExistingUser.length > 0) {
-            return res.status(409).json({error: 'User with that email exists'})
-        }
-
-        const hashedPassword = await bcrypt.hash(userPassword, 10);
-
-        const newUser = await User.create({
-            ...userData,
-            password: hashedPassword
-        });
-
-        res.status(201).json(newUser);
-    } catch (error) {
-        console.error('Internal Server Error', error);
-        next(error)
+    if (checkExistingUser.length > 0) {
+      return res.status(409).json({ error: "User with that email exists" });
     }
-});
 
+    const hashedPassword = await bcrypt.hash(userPassword, 10);
+
+    const newUser = await User.create({
+      ...userData,
+      password: hashedPassword,
+    });
+
+    res.status(201).json(sanitizeUser(newUser));
+  } catch (error) {
+    console.error("Internal Server Error", error);
+    next(error);
+  }
+});
 
 // Sign In
-router.post('/login', [
-    check ('email').not().isEmpty().trim().isEmail(),
-    check ('password').not().isEmpty().trim().withMessage('Password cannot be empty')
-], async (req, res, next) => {
+router.post(
+  "/login",
+  [
+    check("email").not().isEmpty().trim().isEmail(),
+    check("password")
+      .not()
+      .isEmpty()
+      .trim()
+      .withMessage("Password cannot be empty"),
+  ],
+  async (req, res, next) => {
     const errors = validationResult(req);
 
-    if(!errors.isEmpty()) {
-        return res.status(400).json({ error: errors.array() })
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors.array() });
     } else {
-        try {
-            const { email, password } = req.body;
+      try {
+        const { email, password } = req.body;
 
-            const getUser = await User.findOne({
-                where: {
-                    email: email
-                }
-            })
+        const getUser = await User.findOne({
+          where: {
+            email: email,
+          },
+        });
 
-            if (!getUser) {
-                return res.status(401).json({ error: 'User not found' })
-            }
-
-            const validatePassword = await bcrypt.compare(password, getUser.password);
-
-            if (!validatePassword) {
-                return res.status(401).json({ error: 'Incorrect Password' })
-            }
-
-            req.session.userId = getUser.id;
-            req.session.email = getUser.email;
-
-            res.status(200).json(getUser);
-        } catch (error) {
-            console.error('Internal Server Error', error);
-            next(error);
+        if (!getUser) {
+          return res.status(401).json({ error: "User not found" });
         }
-    }
-});
 
+        const validatePassword = await bcrypt.compare(
+          password,
+          getUser.password,
+        );
+
+        if (!validatePassword) {
+          return res.status(401).json({ error: "Incorrect Password" });
+        }
+
+        const token = signAuthToken(getUser);
+
+        res.status(200).json({
+          token,
+          user: sanitizeUser(getUser),
+        });
+      } catch (error) {
+        console.error("Internal Server Error", error);
+        next(error);
+      }
+    }
+  },
+);
 
 // Sign Out
-router.get('/logout', async(req, res, next) => {
-    try {
-        req.session.destroy((err) => {
-            if (err) return next(err);
-
-            res.clearCookie('archive.sid');
-            res.status(200).json({ message: 'Logout Successful' });
-        });
-    } catch (error) {
-        console.error('Internal Server Error', error);
-        next(error)
-    }
+router.get("/logout", requireAuth, async (req, res, next) => {
+  try {
+    res.status(200).json({ message: "Logout Successful" });
+  } catch (error) {
+    console.error("Internal Server Error", error);
+    next(error);
+  }
 });
 
-router.get('/session', async (req, res, next) => {
-    try {
-        if (!req.session?.userId) {
-            return res.status(401).json({ error: 'No active session' });
-        }
+router.get("/session", requireAuth, async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.auth.userId, {
+      attributes: ["id", "first_name", "last_name", "email"],
+    });
 
-        const user = await User.findByPk(req.session.userId, {
-            attributes: ['id', 'first_name', 'last_name', 'email']
-        });
-
-        if (!user) {
-            return res.status(401).json({ error: 'No user found' });
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        console.error('Internal Server Error', error);
-        next(error);
+    if (!user) {
+      return res.status(401).json({ error: "No user found" });
     }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Internal Server Error", error);
+    next(error);
+  }
 });
 
+// Get User Profile
+router.post("/profile", requireAuth, async (req, res, next) => {
+  try {
+    const email = req.auth?.email;
 
-// Get User Profile 
-router.post('/profile', async(req, res, next) => {
-    try {
-        const email = req.session?.email || req.body.email;
+    const user = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
 
-        if (!email) {
-            return res.status(401).json({ error: 'No active session'});
-        }
-
-        const user = await User.findOne({
-            where: {
-                email: email
-            }
-        })
-
-        if(!user) {
-            return res.status(401).json({ error: 'No user found'})
-        }
-
-        res.status(200).json(user);
-    } catch (error) {
-        console.error('Internal Server Error', error);
-        next(error)
+    if (!user) {
+      return res.status(401).json({ error: "No user found" });
     }
-})
 
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Internal Server Error", error);
+    next(error);
+  }
+});
 
 // Update User Password
-router.put('/change-password', async(req, res, next) => {
-    try {
-        const {current_password, new_password, confirm_password} = req.body;
-        const email = req.session?.email || req.body.email;
+router.put("/change-password", requireAuth, async (req, res, next) => {
+  try {
+    const { current_password, new_password, confirm_password } = req.body;
+    const email = req.auth?.email;
 
-        if (!email) {
-            return res.status(401).json({ error: 'No active session'});
-        }
+    const user = await User.findOne({
+      where: {
+        email: email,
+      },
+    });
 
-        const user = await User.findOne({
-            where: {
-                email: email
-            }
-        })
-
-        if(!user) {
-            return res.status(401).json({ error: 'No user found'})
-        }
-
-        const validatePassword = await bcrypt.compare(current_password, user.password);
-
-        if(!validatePassword) {
-            return res.status(401).json({ error: 'Incorrect Password' })
-        }
-
-        if(new_password !== confirm_password) {
-            return res.status(401).json({ error: 'Passwords Do Not Match' })
-        }
-
-        const newHashedPW = await bcrypt.hash(new_password, 10);
-        await user.update({ password: newHashedPW})
-
-        res.status(200).json({"message": 'Password updated successfully'})
-    } catch (error) {
-        console.error('Internal Server Error', error);
-        next(error)
+    if (!user) {
+      return res.status(401).json({ error: "No user found" });
     }
-})
 
+    const validatePassword = await bcrypt.compare(
+      current_password,
+      user.password,
+    );
+
+    if (!validatePassword) {
+      return res.status(401).json({ error: "Incorrect Password" });
+    }
+
+    if (new_password !== confirm_password) {
+      return res.status(401).json({ error: "Passwords Do Not Match" });
+    }
+
+    const newHashedPW = await bcrypt.hash(new_password, 10);
+    await user.update({ password: newHashedPW });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Internal Server Error", error);
+    next(error);
+  }
+});
 
 module.exports = router;

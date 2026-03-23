@@ -7,6 +7,7 @@ const { check, validationResult } = require("express-validator");
 const { Op } = require("sequelize");
 const { uploadToAzure, deleteBlob, generateSasUrl } = require("../azure-blob");
 const { v4: uuidv4 } = require("uuid");
+const { requireAuth } = require("../middleware/requireAuth");
 
 function resolveContainer(size) {
   const map = {
@@ -28,7 +29,7 @@ function getBlobExtension(base64Data) {
 
 async function logPrintChange({ action, catalogNumber, description, req }) {
   const changedBy =
-    req.session?.email || req.body?.changed_by || req.body?.email || "System";
+    req.auth?.email || req.body?.changed_by || req.body?.email || "System";
 
   await PrintChangeLog.create({
     action,
@@ -42,6 +43,8 @@ function formatValue(value) {
   if (value === null || value === undefined || value === "") return "(empty)";
   return String(value);
 }
+
+router.use(requireAuth);
 
 router.get("/all", async (req, res, next) => {
   try {

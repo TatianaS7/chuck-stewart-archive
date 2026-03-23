@@ -5,8 +5,10 @@ const { v4: uuidv4 } = require("uuid");
 const Print = require("../models/print");
 const PrintChangeLog = require("../models/printChangeLog");
 const { uploadToAzure } = require("../azure-blob");
+const { requireAuth } = require("../middleware/requireAuth");
 
 const router = express.Router();
+router.use(requireAuth);
 
 function resolveContainer(size) {
   const map = {
@@ -28,7 +30,7 @@ function getBlobExtension(base64Data) {
 
 async function logPrintChange({ action, catalogNumber, description, req }) {
   const changedBy =
-    req.session?.email || req.body?.changed_by || req.body?.email || "System";
+    req.auth?.email || req.body?.changed_by || req.body?.email || "System";
 
   await PrintChangeLog.create({
     action,

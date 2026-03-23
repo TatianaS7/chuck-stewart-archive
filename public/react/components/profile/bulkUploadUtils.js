@@ -1,5 +1,6 @@
 import Papa from "papaparse";
 import apiURL from "../../api";
+import { buildAuthHeaders } from "../../authToken";
 
 export function normalizeHeader(header) {
   return String(header || "")
@@ -42,10 +43,9 @@ export function buildReviewRows(validatedRows, previousRows = []) {
 export async function requestBulkValidation(rows) {
   const res = await fetch(`${apiURL}/prints/bulk/validate`, {
     method: "POST",
-    credentials: "include",
-    headers: {
+    headers: buildAuthHeaders({
       "Content-Type": "application/json",
-    },
+    }),
     body: JSON.stringify({ rows }),
   });
 
@@ -61,10 +61,9 @@ export async function requestBulkValidation(rows) {
 export async function requestBulkAssetValidation(assetType, files) {
   const res = await fetch(`${apiURL}/prints/bulk/assets/validate`, {
     method: "POST",
-    credentials: "include",
-    headers: {
+    headers: buildAuthHeaders({
       "Content-Type": "application/json",
-    },
+    }),
     body: JSON.stringify({ assetType, files }),
   });
 
@@ -80,10 +79,9 @@ export async function requestBulkAssetValidation(assetType, files) {
 export async function requestBulkImageImport(rows) {
   const res = await fetch(`${apiURL}/prints/bulk/images/import`, {
     method: "POST",
-    credentials: "include",
-    headers: {
+    headers: buildAuthHeaders({
       "Content-Type": "application/json",
-    },
+    }),
     body: JSON.stringify({ rows }),
   });
 

@@ -1,5 +1,11 @@
 import React, { createContext, useState, useEffect } from "react";
 import apiURL from "../api";
+import {
+  buildAuthHeaders,
+  clearAuthToken,
+  getAuthToken,
+  setAuthToken,
+} from "../authToken";
 
 export const AppContext = createContext();
 
@@ -67,9 +73,12 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     async function restoreSessionFromServer() {
       try {
+        const token = getAuthToken();
+        if (!token) return;
+
         const res = await fetch(`${apiURL}/auth/session`, {
           method: "GET",
-          credentials: "include",
+          headers: buildAuthHeaders(),
         });
 
         if (!res.ok) return;
@@ -116,7 +125,6 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${apiURL}/auth/login`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -128,8 +136,11 @@ export const AppProvider = ({ children }) => {
         errorMessage.style.color = "red";
         throw new Error("Failed to sign in");
       }
-
-      const signedInUser = await res.json();
+      const loginPayload = await res.json();
+      const signedInUser = loginPayload.user || loginPayload;
+      if (loginPayload.token) {
+        setAuthToken(loginPayload.token);
+      }
 
       setUserData(signedInUser);
       setEmail(signedInUser.email);
@@ -148,11 +159,12 @@ export const AppProvider = ({ children }) => {
     try {
       await fetch(`${apiURL}/auth/logout`, {
         method: "GET",
-        credentials: "include",
+        headers: buildAuthHeaders(),
       });
     } catch (error) {
       console.error("Error logging out", error);
     } finally {
+      clearAuthToken();
       localStorage.removeItem(SESSION_KEY);
       setEmail(null);
       setPassword(null);
@@ -166,10 +178,9 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${apiURL}/auth/change-password`, {
         method: "PUT",
-        credentials: "include",
-        headers: {
+        headers: buildAuthHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify(passwordForm),
       });
       const data = await res.json();
@@ -186,10 +197,9 @@ export const AppProvider = ({ children }) => {
 
       const res = await fetch(`${apiURL}/auth/profile`, {
         method: "POST",
-        credentials: "include",
-        headers: {
+        headers: buildAuthHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();
@@ -207,7 +217,9 @@ export const AppProvider = ({ children }) => {
   // Fetch All Prints Function
   async function fetchPrints() {
     try {
-      const res = await fetch(`${apiURL}/prints/all`);
+      const res = await fetch(`${apiURL}/prints/all`, {
+        headers: buildAuthHeaders(),
+      });
       const printData = await res.json();
 
       if (!printData) {
@@ -230,10 +242,9 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${apiURL}/prints`, {
         method: "POST",
-        credentials: "include",
-        headers: {
+        headers: buildAuthHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify(newPrintData),
       });
 
@@ -278,7 +289,9 @@ export const AppProvider = ({ children }) => {
       console.log(searchQuery);
       const encodedQuery = encodeURIComponent(searchQuery);
 
-      const res = await fetch(`${apiURL}/search?query=${encodedQuery}`);
+      const res = await fetch(`${apiURL}/search?query=${encodedQuery}`, {
+        headers: buildAuthHeaders(),
+      });
       const data = await res.json();
       console.log(data);
       setSearchResults(data);
@@ -297,7 +310,7 @@ export const AppProvider = ({ children }) => {
       console.log(catalog_number);
       const res = await fetch(`${apiURL}/prints/${catalog_number}`, {
         method: "DELETE",
-        credentials: "include",
+        headers: buildAuthHeaders(),
       });
       const data = await res.json();
       console.log(data);
@@ -311,10 +324,9 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await fetch(`${apiURL}/prints/update/${catalog_number}`, {
         method: "PUT",
-        credentials: "include",
-        headers: {
+        headers: buildAuthHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify(updatedData),
       });
       const data = await res.json();

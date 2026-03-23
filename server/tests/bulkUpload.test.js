@@ -5,13 +5,40 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 const require = createRequire(import.meta.url);
 const app = require("../src/app");
 const Print = require("../models/print");
+const User = require("../models/user");
 const { db } = require("../db/connection");
 
 const createdCatalogs = new Set();
+const createdEmails = new Set();
 
 function uniqueCatalog(prefix) {
   const value = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   return value;
+}
+
+function uniqueEmail(prefix) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}@test.com`;
+}
+
+async function getAuthToken() {
+  const email = uniqueEmail("bulk");
+  const password = "TestPassword123!";
+  createdEmails.add(email);
+
+  await request(app).post("/api/auth").send({
+    first_name: "Bulk",
+    last_name: "Tester",
+    email,
+    password,
+  });
+
+  const login = await request(app).post("/api/auth/login").send({
+    email,
+    password,
+  });
+
+  expect(login.status).toBe(200);
+  return login.body.token;
 }
 
 async function seedPrint(overrides = {}) {
@@ -46,35 +73,47 @@ describe("Bulk upload endpoints", () => {
   });
 
   afterEach(async () => {
-    if (!createdCatalogs.size) return;
+    if (createdCatalogs.size) {
+      await Print.destroy({
+        where: {
+          catalog_number: [...createdCatalogs],
+        },
+      });
 
-    await Print.destroy({
-      where: {
-        catalog_number: [...createdCatalogs],
-      },
-    });
+      createdCatalogs.clear();
+    }
 
-    createdCatalogs.clear();
+    if (createdEmails.size) {
+      await User.destroy({
+        where: {
+          email: [...createdEmails],
+        },
+      });
+
+      createdEmails.clear();
+    }
   });
 
   it("POST /api/prints/bulk/validate returns 400 with empty rows", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({ rows: [] });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe(
-      "Provide at least one row to validate.",
-    );
+    expect(response.body.message).toBe("Provide at least one row to validate.");
     expect(response.body.summary.totalRows).toBe(0);
   });
 
   it("POST /api/prints/bulk/validate returns validation summary for valid row", async () => {
     const testCatalog = uniqueCatalog("validate");
     createdCatalogs.add(testCatalog);
+    const token = await getAuthToken();
 
     const response = await request(app)
       .post("/api/prints/bulk/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         rows: [
           {
@@ -98,8 +137,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/validate detects missing required fields", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         rows: [
           {
@@ -116,9 +157,11 @@ describe("Bulk upload endpoints", () => {
   it("POST /api/prints/bulk/validate detects invalid status", async () => {
     const testCatalog = uniqueCatalog("validate-status");
     createdCatalogs.add(testCatalog);
+    const token = await getAuthToken();
 
     const response = await request(app)
       .post("/api/prints/bulk/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         rows: [
           {
@@ -138,9 +181,11 @@ describe("Bulk upload endpoints", () => {
   it("POST /api/prints/bulk/validate detects invalid size", async () => {
     const testCatalog = uniqueCatalog("validate-size");
     createdCatalogs.add(testCatalog);
+    const token = await getAuthToken();
 
     const response = await request(app)
       .post("/api/prints/bulk/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         rows: [
           {
@@ -158,8 +203,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/assets/validate returns 400 with invalid assetType", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/assets/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         assetType: "invalid",
         files: [{ fileName: "test.jpg" }],
@@ -172,8 +219,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/assets/validate returns 400 with empty files", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/assets/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         assetType: "images",
         files: [],
@@ -188,12 +237,14 @@ describe("Bulk upload endpoints", () => {
   it("POST /api/prints/bulk/assets/validate returns validation summary for images", async () => {
     const testCatalog = uniqueCatalog("assets-validate");
     createdCatalogs.add(testCatalog);
+    const token = await getAuthToken();
 
     // Create a print first for the asset to be linked to
     await seedPrint({ catalog_number: testCatalog });
 
     const response = await request(app)
       .post("/api/prints/bulk/assets/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         assetType: "images",
         files: [
@@ -213,12 +264,14 @@ describe("Bulk upload endpoints", () => {
   it("POST /api/prints/bulk/assets/validate returns validation summary for certificates", async () => {
     const testCatalog = uniqueCatalog("cert-validate");
     createdCatalogs.add(testCatalog);
+    const token = await getAuthToken();
 
     // Create a print first for the certificate to be linked to
     await seedPrint({ catalog_number: testCatalog });
 
     const response = await request(app)
       .post("/api/prints/bulk/assets/validate")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         assetType: "certificates",
         files: [
@@ -235,8 +288,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/import returns 400 with empty rows", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/import")
+      .set("Authorization", `Bearer ${token}`)
       .send({ rows: [] });
 
     expect(response.status).toBe(400);
@@ -246,8 +301,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/import returns 400 with invalid rows", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/import")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         rows: [
           {
@@ -261,8 +318,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/images/import returns 400 with invalid request", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/images/import")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         // Missing required fields
       });
@@ -271,8 +330,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/assets/import returns 400 with invalid assetType", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/assets/import")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         assetType: "invalid",
         imports: [],
@@ -282,8 +343,10 @@ describe("Bulk upload endpoints", () => {
   });
 
   it("POST /api/prints/bulk/assets/import returns 400 with empty imports", async () => {
+    const token = await getAuthToken();
     const response = await request(app)
       .post("/api/prints/bulk/assets/import")
+      .set("Authorization", `Bearer ${token}`)
       .send({
         assetType: "images",
         imports: [],

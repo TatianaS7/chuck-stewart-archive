@@ -1,6 +1,6 @@
 // @ts-check
 import { test, expect } from "@playwright/test";
-import { TEST_EMAIL, TEST_PASSWORD } from "./global.setup.js";
+import { TEST_EMAIL, TEST_PASSWORD } from "./testCredentials.js";
 
 // All tests here run with a fresh (unauthenticated) browser context.
 // The setup project ensures the test user exists before this suite runs.

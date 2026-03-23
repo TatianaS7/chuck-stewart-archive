@@ -3,6 +3,7 @@ const router = express.Router();
 const Print = require("../models/print");
 const { Op } = require("sequelize");
 const { generateSasUrl } = require("../azure-blob");
+const { requireAuth } = require("../middleware/requireAuth");
 
 const CERTIFICATE_CONTAINER = "print-certificates";
 
@@ -14,6 +15,8 @@ function resolveContainer(size) {
   };
   return map[size] || null;
 }
+
+router.use(requireAuth);
 
 router.get("/", async (req, res, next) => {
   try {

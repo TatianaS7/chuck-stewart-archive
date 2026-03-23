@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { TEST_EMAIL, TEST_PASSWORD } from "./testCredentials.js";
 
 test.use({ storageState: './e2e/.auth/state.json' });
 
@@ -7,6 +8,61 @@ test.use({ storageState: './e2e/.auth/state.json' });
 // All tests run with the pre-authenticated browser context from global.setup.js.
 
 const API = "http://localhost:8000/api";
+let cachedToken = null;
+
+async function getAuthToken(request) {
+  if (cachedToken) return cachedToken;
+
+  await request.post(`${API}/auth`, {
+    data: {
+      first_name: "E2E",
+      last_name: "Test",
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+    },
+  });
+
+  const loginRes = await request.post(`${API}/auth/login`, {
+    data: {
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+    },
+  });
+
+  if (!loginRes.ok()) {
+    throw new Error(`Unable to authenticate API request context (${loginRes.status()})`);
+  }
+
+  const payload = await loginRes.json();
+  if (!payload?.token) {
+    throw new Error("Login response missing JWT token");
+  }
+
+  cachedToken = payload.token;
+  return cachedToken;
+}
+
+async function authedRequest(request, method, url, options = {}) {
+  const token = await getAuthToken(request);
+  const headers = {
+    ...(options.headers || {}),
+    Authorization: `Bearer ${token}`,
+  };
+
+  return request[method](url, {
+    ...options,
+    headers,
+  });
+}
+
+const authedGet = (request, url, options = {}) =>
+  authedRequest(request, "get", url, options);
+const authedPost = (request, url, options = {}) =>
+  authedRequest(request, "post", url, options);
+const authedPut = (request, url, options = {}) =>
+  authedRequest(request, "put", url, options);
+const authedDelete = (request, url, options = {}) =>
+  authedRequest(request, "delete", url, options);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -26,7 +82,7 @@ function uniqueCatalog(prefix) {
 async function bulkImportRecord(request, overrides = {}) {
   const catalog = /** @type {string} */ (overrides.catalog_number) || uniqueCatalog("RECORD");
 
-  const res = await request.post(`${API}/prints/bulk/import`, {
+  const res = await authedPost(request, `${API}/prints/bulk/import`, {
     data: {
       rows: [
         {
@@ -55,7 +111,7 @@ async function bulkImportRecord(request, overrides = {}) {
  * @param {string} catalog
  */
 async function getPrint(request, catalog) {
-  const all = await request.get(`${API}/prints/all`);
+  const all = await authedGet(request, `${API}/prints/all`);
   const body = await all.json();
   const prints = body.allPrints ?? body;
   return (
@@ -71,7 +127,8 @@ async function getPrint(request, catalog) {
  * @param {string} catalog
  */
 async function deletePrint(request, catalog) {
-  await request.delete(
+  await authedDelete(
+    request,
     `${API}/prints/${encodeURIComponent(catalog)}`,
   );
 }
@@ -144,7 +201,7 @@ test.describe("Bulk Upload – UI layout", () => {
 
 test.describe("Bulk Upload – validate endpoint rules", () => {
   test("rejects a row with a missing required field", async ({ request }) => {
-    const res = await request.post(`${API}/prints/bulk/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/validate`, {
       data: {
         rows: [
           {
@@ -165,7 +222,7 @@ test.describe("Bulk Upload – validate endpoint rules", () => {
   });
 
   test("rejects a row with an invalid status value", async ({ request }) => {
-    const res = await request.post(`${API}/prints/bulk/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/validate`, {
       data: {
         rows: [
           {
@@ -187,7 +244,7 @@ test.describe("Bulk Upload – validate endpoint rules", () => {
   });
 
   test("rejects a row with an invalid size value", async ({ request }) => {
-    const res = await request.post(`${API}/prints/bulk/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/validate`, {
       data: {
         rows: [
           {
@@ -209,7 +266,7 @@ test.describe("Bulk Upload – validate endpoint rules", () => {
   });
 
   test("flags date_sold set when status is not Sold", async ({ request }) => {
-    const res = await request.post(`${API}/prints/bulk/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/validate`, {
       data: {
         rows: [
           {
@@ -236,7 +293,7 @@ test.describe("Bulk Upload – validate endpoint rules", () => {
   }) => {
     const catalog = uniqueCatalog("DUPE");
 
-    const res = await request.post(`${API}/prints/bulk/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/validate`, {
       data: {
         rows: [
           {
@@ -281,7 +338,7 @@ test.describe("Bulk Upload – validate endpoint rules", () => {
     expect(createRes.status()).toBe(201);
 
     try {
-      const res = await request.post(`${API}/prints/bulk/validate`, {
+      const res = await authedPost(request, `${API}/prints/bulk/validate`, {
         data: {
           rows: [
             {
@@ -377,7 +434,8 @@ test.describe("Bulk Upload – CRUD consistency", () => {
     const before = await getPrint(request, catalog);
     expect(before).not.toBeNull();
 
-    const delRes = await request.delete(
+    const delRes = await authedDelete(
+      request,
       `${API}/prints/${encodeURIComponent(catalog)}`,
     );
     expect(delRes.status()).toBe(200);
@@ -393,9 +451,10 @@ test.describe("Bulk Upload – CRUD consistency", () => {
     const catalog = uniqueCatalog("DOUBLE-DEL");
     await bulkImportRecord(request, { catalog_number: catalog });
 
-    await request.delete(`${API}/prints/${encodeURIComponent(catalog)}`);
+    await authedDelete(request, `${API}/prints/${encodeURIComponent(catalog)}`);
 
-    const secondDelete = await request.delete(
+    const secondDelete = await authedDelete(
+      request,
       `${API}/prints/${encodeURIComponent(catalog)}`,
     );
     // Route returns 404 — prevents double Azure deleteBlob calls that would error
@@ -412,7 +471,8 @@ test.describe("Bulk Upload – CRUD consistency", () => {
     await bulkImportRecord(request, { catalog_number: catalog });
 
     // Simulate attaching a fake blob reference via the update endpoint
-    await request.put(
+    await authedPut(
+      request,
       `${API}/prints/update/${encodeURIComponent(catalog)}`,
       {
         data: {
@@ -430,7 +490,8 @@ test.describe("Bulk Upload – CRUD consistency", () => {
     );
 
     // Delete the print
-    const delRes = await request.delete(
+    const delRes = await authedDelete(
+      request,
       `${API}/prints/${encodeURIComponent(catalog)}`,
     );
     expect(delRes.status()).toBe(200);
@@ -447,7 +508,8 @@ test.describe("Bulk Upload – CRUD consistency", () => {
 
     await bulkImportRecord(request, { catalog_number: catalog });
 
-    await request.put(
+    await authedPut(
+      request,
       `${API}/prints/update/${encodeURIComponent(catalog)}`,
       {
         data: {
@@ -464,7 +526,8 @@ test.describe("Bulk Upload – CRUD consistency", () => {
       },
     );
 
-    const delRes = await request.delete(
+    const delRes = await authedDelete(
+      request,
       `${API}/prints/${encodeURIComponent(catalog)}`,
     );
     expect(delRes.status()).toBe(200);
@@ -481,7 +544,7 @@ test.describe("Bulk Upload – CRUD consistency", () => {
 
 test.describe("Bulk Upload – asset validation rules", () => {
   test("rejects images with invalid file extension", async ({ request }) => {
-    const res = await request.post(`${API}/prints/bulk/assets/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/assets/validate`, {
       data: {
         assetType: "images",
         files: [{ fileName: "1978 CS 0042.docx" }],
@@ -499,7 +562,7 @@ test.describe("Bulk Upload – asset validation rules", () => {
   });
 
   test("rejects certificates with Word file extension", async ({ request }) => {
-    const res = await request.post(`${API}/prints/bulk/assets/validate`, {
+    const res = await authedPost(request, `${API}/prints/bulk/assets/validate`, {
       data: {
         assetType: "certificates",
         files: [{ fileName: `${uniqueCatalog("WORD")}.docx` }],
@@ -521,7 +584,7 @@ test.describe("Bulk Upload – asset validation rules", () => {
     await bulkImportRecord(request, { catalog_number: catalog });
 
     try {
-      const res = await request.post(`${API}/prints/bulk/assets/validate`, {
+      const res = await authedPost(request, `${API}/prints/bulk/assets/validate`, {
         data: {
           assetType: "certificates",
           files: [{ fileName: `${catalog}.jpg` }],

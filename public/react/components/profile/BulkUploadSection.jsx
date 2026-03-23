@@ -1,5 +1,6 @@
 import React, { useContext, useMemo, useState } from "react";
 import apiURL from "../../api";
+import { buildAuthHeaders } from "../../authToken";
 import { AppContext } from "../AppContext";
 import BulkUploadAssetReviewTable from "./BulkUploadAssetReviewTable";
 import BulkUploadStatusPanel from "./BulkUploadStatusPanel";
@@ -102,22 +103,50 @@ function BulkUploadSection() {
     if (uploadMode === "records" && validationSummary) {
       return [
         { label: "Parsed Rows", value: validationSummary.totalRows },
-        { label: "Valid Rows", value: validationSummary.validRows, tone: "valid" },
-        { label: "Needs Review", value: validationSummary.invalidRows, tone: "invalid" },
+        {
+          label: "Valid Rows",
+          value: validationSummary.validRows,
+          tone: "valid",
+        },
+        {
+          label: "Needs Review",
+          value: validationSummary.invalidRows,
+          tone: "invalid",
+        },
         { label: "Selected To Save", value: selectedRowCount },
-        { label: "Duplicate Catalogs", value: validationSummary.duplicateFileCatalogs || 0 },
-        { label: "Already In Archive", value: validationSummary.existingCatalogDuplicates || 0 },
+        {
+          label: "Duplicate Catalogs",
+          value: validationSummary.duplicateFileCatalogs || 0,
+        },
+        {
+          label: "Already In Archive",
+          value: validationSummary.existingCatalogDuplicates || 0,
+        },
       ];
     }
 
     if (uploadMode === "images" && validationSummary) {
       return [
         { label: "Parsed Rows", value: validationSummary.totalRows },
-        { label: "Valid Rows", value: validationSummary.validRows, tone: "valid" },
-        { label: "Needs Review", value: validationSummary.invalidRows, tone: "invalid" },
+        {
+          label: "Valid Rows",
+          value: validationSummary.validRows,
+          tone: "valid",
+        },
+        {
+          label: "Needs Review",
+          value: validationSummary.invalidRows,
+          tone: "invalid",
+        },
         { label: "Selected To Upload", value: selectedRowCount },
-        { label: "Duplicate Catalogs", value: validationSummary.duplicateFileCatalogs || 0 },
-        { label: "Already In Archive", value: validationSummary.existingCatalogDuplicates || 0 },
+        {
+          label: "Duplicate Catalogs",
+          value: validationSummary.duplicateFileCatalogs || 0,
+        },
+        {
+          label: "Already In Archive",
+          value: validationSummary.existingCatalogDuplicates || 0,
+        },
       ];
     }
 
@@ -125,22 +154,47 @@ function BulkUploadSection() {
       return [
         { label: "Files Found", value: assetSummary.totalFiles },
         { label: "Valid Files", value: assetSummary.validFiles, tone: "valid" },
-        { label: "Needs Review", value: assetSummary.invalidFiles, tone: "invalid" },
+        {
+          label: "Needs Review",
+          value: assetSummary.invalidFiles,
+          tone: "invalid",
+        },
         { label: "Selected To Upload", value: selectedAssetCount },
-        { label: "Duplicate Catalogs", value: assetSummary.duplicateCatalogEntries || 0 },
-        { label: "Duplicate File Names", value: assetSummary.duplicateFileEntries || 0 },
-        { label: "Existing Assets", value: assetSummary.existingAssetDuplicates || 0 },
+        {
+          label: "Duplicate Catalogs",
+          value: assetSummary.duplicateCatalogEntries || 0,
+        },
+        {
+          label: "Duplicate File Names",
+          value: assetSummary.duplicateFileEntries || 0,
+        },
+        {
+          label: "Existing Assets",
+          value: assetSummary.existingAssetDuplicates || 0,
+        },
         {
           label: uploadMode === "images" ? "Unmatched Files" : "Missing Prints",
           value: assetSummary.unmatchedFiles || assetSummary.missingPrints || 0,
         },
-        { label: "Flagged For Review", value: assetSummary.reviewFlaggedFiles || 0 },
-        { label: "PDF Conversion Needed", value: assetSummary.conversionRequired || 0 },
+        {
+          label: "Flagged For Review",
+          value: assetSummary.reviewFlaggedFiles || 0,
+        },
+        {
+          label: "PDF Conversion Needed",
+          value: assetSummary.conversionRequired || 0,
+        },
       ];
     }
 
     return [];
-  }, [uploadMode, validationSummary, selectedRowCount, assetSummary, selectedAssetCount]);
+  }, [
+    uploadMode,
+    validationSummary,
+    selectedRowCount,
+    assetSummary,
+    selectedAssetCount,
+  ]);
 
   const activeWarnings =
     uploadMode === "certificates" ? assetWarnings : parserWarnings;
@@ -168,18 +222,32 @@ function BulkUploadSection() {
     resetReviewState(nextMode);
   }
 
-  async function validateRowsForReview(rows, previousRows = [], sourceFiles = []) {
-    updateStatus("validating", "Validating rows against archive rules...", "working");
+  async function validateRowsForReview(
+    rows,
+    previousRows = [],
+    sourceFiles = [],
+  ) {
+    updateStatus(
+      "validating",
+      "Validating rows against archive rules...",
+      "working",
+    );
     const validation = await requestBulkValidation(rows);
-    const nextRows = buildReviewRows(validation.rows, previousRows).map((row) => {
-      const previous = previousRows.find((previousRow) => previousRow.rowNumber === row.rowNumber);
-      const source = sourceFiles.find((file) => file.rowNumber === row.rowNumber);
+    const nextRows = buildReviewRows(validation.rows, previousRows).map(
+      (row) => {
+        const previous = previousRows.find(
+          (previousRow) => previousRow.rowNumber === row.rowNumber,
+        );
+        const source = sourceFiles.find(
+          (file) => file.rowNumber === row.rowNumber,
+        );
 
-      return {
-        ...row,
-        sourceFileName: source?.fileName || previous?.sourceFileName || "",
-      };
-    });
+        return {
+          ...row,
+          sourceFileName: source?.fileName || previous?.sourceFileName || "",
+        };
+      },
+    );
 
     setReviewRows(nextRows);
     setValidationSummary(validation.summary);
@@ -200,7 +268,11 @@ function BulkUploadSection() {
   }
 
   async function validateAssetsForReview(files, previousRows = []) {
-    updateStatus("validating", "Validating files against archive records...", "working");
+    updateStatus(
+      "validating",
+      "Validating files against archive records...",
+      "working",
+    );
     const validation = await requestBulkAssetValidation(uploadMode, files);
     const nextRows = buildReviewRows(validation.rows, previousRows);
 
@@ -230,7 +302,11 @@ function BulkUploadSection() {
     setParserWarnings([]);
 
     if (file) {
-      updateStatus("idle", `Selected ${file.name}. Validate the file to begin review.`, "idle");
+      updateStatus(
+        "idle",
+        `Selected ${file.name}. Validate the file to begin review.`,
+        "idle",
+      );
       return;
     }
 
@@ -279,14 +355,26 @@ function BulkUploadSection() {
         setParserWarnings(parsedResult.warnings);
         await validateRowsForReview(parsedResult.rows);
       } else if (uploadMode === "images") {
-        updateStatus("reading", "Reading selected files from folder...", "working");
-        updateStatus("parsing", "Parsing image file names into print rows...", "working");
+        updateStatus(
+          "reading",
+          "Reading selected files from folder...",
+          "working",
+        );
+        updateStatus(
+          "parsing",
+          "Parsing image file names into print rows...",
+          "working",
+        );
         const parsedResult = await parseSelectedImageFiles(selectedAssetFiles);
         setAssetFiles(parsedResult.files);
         setParserWarnings(parsedResult.warnings);
         await validateRowsForReview(parsedResult.rows, [], parsedResult.files);
       } else {
-        updateStatus("reading", "Reading selected files from folder...", "working");
+        updateStatus(
+          "reading",
+          "Reading selected files from folder...",
+          "working",
+        );
         const parsedResult = await parseSelectedAssetFiles(selectedAssetFiles);
         setAssetFiles(parsedResult.files);
         setAssetWarnings(parsedResult.warnings);
@@ -294,7 +382,11 @@ function BulkUploadSection() {
       }
     } catch (error) {
       resetReviewState(uploadMode);
-      updateStatus("error", error.message || "Unable to validate file.", "error");
+      updateStatus(
+        "error",
+        error.message || "Unable to validate file.",
+        "error",
+      );
     } finally {
       setIsValidating(false);
     }
@@ -325,7 +417,9 @@ function BulkUploadSection() {
       } else {
         const files = assetReviewRows
           .map((row) => {
-            const sourceFile = assetFiles.find((file) => file.rowNumber === row.rowNumber);
+            const sourceFile = assetFiles.find(
+              (file) => file.rowNumber === row.rowNumber,
+            );
             if (!sourceFile) return null;
             return {
               rowNumber: row.rowNumber,
@@ -338,7 +432,11 @@ function BulkUploadSection() {
         await validateAssetsForReview(files, assetReviewRows);
       }
     } catch (error) {
-      updateStatus("error", error.message || "Unable to re-validate reviewed rows.", "error");
+      updateStatus(
+        "error",
+        error.message || "Unable to re-validate reviewed rows.",
+        "error",
+      );
     } finally {
       setIsValidating(false);
     }
@@ -391,18 +489,28 @@ function BulkUploadSection() {
       const selectedFiles = assetReviewRows.filter((row) => row.selected);
 
       if (!selectedFiles.length) {
-        updateStatus("review", "Select at least one valid file to upload.", "warning");
+        updateStatus(
+          "review",
+          "Select at least one valid file to upload.",
+          "warning",
+        );
         return;
       }
 
       setIsImporting(true);
 
       try {
-        updateStatus("revalidating", "Re-validating selected files before upload...", "working");
+        updateStatus(
+          "revalidating",
+          "Re-validating selected files before upload...",
+          "working",
+        );
 
         const selectedPayload = selectedFiles
           .map((row) => {
-            const sourceFile = assetFiles.find((file) => file.rowNumber === row.rowNumber);
+            const sourceFile = assetFiles.find(
+              (file) => file.rowNumber === row.rowNumber,
+            );
             if (!sourceFile) return null;
             return {
               rowNumber: row.rowNumber,
@@ -412,10 +520,15 @@ function BulkUploadSection() {
           })
           .filter(Boolean);
 
-        const revalidated = await requestBulkAssetValidation(uploadMode, selectedPayload);
+        const revalidated = await requestBulkAssetValidation(
+          uploadMode,
+          selectedPayload,
+        );
 
         if (revalidated.summary.invalidFiles > 0) {
-          setAssetReviewRows((prev) => mergeImportedValidation(prev, revalidated.rows));
+          setAssetReviewRows((prev) =>
+            mergeImportedValidation(prev, revalidated.rows),
+          );
           updateStatus(
             "review",
             "Some selected files are no longer valid. Review the flagged files and try again.",
@@ -442,10 +555,9 @@ function BulkUploadSection() {
 
           const res = await fetch(`${apiURL}/prints/bulk/assets/import`, {
             method: "POST",
-            credentials: "include",
-            headers: {
+            headers: buildAuthHeaders({
               "Content-Type": "application/json",
-            },
+            }),
             body: JSON.stringify({
               assetType: uploadMode,
               files: batch,
@@ -456,7 +568,9 @@ function BulkUploadSection() {
 
           if (!res.ok) {
             if (Array.isArray(data.rows)) {
-              setAssetReviewRows((prev) => mergeImportedValidation(prev, data.rows));
+              setAssetReviewRows((prev) =>
+                mergeImportedValidation(prev, data.rows),
+              );
             }
             throw new Error(data.message || "Bulk asset upload failed.");
           }
@@ -489,7 +603,11 @@ function BulkUploadSection() {
           skippedCount > 0 ? "warning" : "success",
         );
       } catch (error) {
-        updateStatus("error", error.message || "Bulk asset upload failed.", "error");
+        updateStatus(
+          "error",
+          error.message || "Bulk asset upload failed.",
+          "error",
+        );
       } finally {
         setIsImporting(false);
       }
@@ -501,14 +619,22 @@ function BulkUploadSection() {
       const selectedRows = reviewRows.filter((row) => row.selected);
 
       if (!selectedRows.length) {
-        updateStatus("review", "Select at least one valid row to upload.", "warning");
+        updateStatus(
+          "review",
+          "Select at least one valid row to upload.",
+          "warning",
+        );
         return;
       }
 
       setIsImporting(true);
 
       try {
-        updateStatus("revalidating", "Re-validating selected rows before upload...", "working");
+        updateStatus(
+          "revalidating",
+          "Re-validating selected rows before upload...",
+          "working",
+        );
 
         const selectedPayload = selectedRows.map((row) => ({
           rowNumber: row.rowNumber,
@@ -518,7 +644,9 @@ function BulkUploadSection() {
         const revalidated = await requestBulkValidation(selectedPayload);
 
         if (revalidated.summary.invalidRows > 0) {
-          setReviewRows((prev) => mergeImportedValidation(prev, revalidated.rows));
+          setReviewRows((prev) =>
+            mergeImportedValidation(prev, revalidated.rows),
+          );
           updateStatus(
             "review",
             "Some selected rows are no longer valid. Review the flagged rows and try again.",
@@ -529,7 +657,9 @@ function BulkUploadSection() {
 
         const uploadRows = revalidated.rows
           .map((row) => {
-            const sourceFile = assetFiles.find((file) => file.rowNumber === row.rowNumber);
+            const sourceFile = assetFiles.find(
+              (file) => file.rowNumber === row.rowNumber,
+            );
             if (!sourceFile) return null;
             return {
               rowNumber: row.rowNumber,
@@ -571,7 +701,11 @@ function BulkUploadSection() {
           "success",
         );
       } catch (error) {
-        updateStatus("error", error.message || "Bulk image upload failed.", "error");
+        updateStatus(
+          "error",
+          error.message || "Bulk image upload failed.",
+          "error",
+        );
       } finally {
         setIsImporting(false);
       }
@@ -582,14 +716,22 @@ function BulkUploadSection() {
     const selectedRows = reviewRows.filter((row) => row.selected);
 
     if (!selectedRows.length) {
-      updateStatus("review", "Select at least one valid row to import.", "warning");
+      updateStatus(
+        "review",
+        "Select at least one valid row to import.",
+        "warning",
+      );
       return;
     }
 
     setIsImporting(true);
 
     try {
-      updateStatus("revalidating", "Re-validating selected rows before saving...", "working");
+      updateStatus(
+        "revalidating",
+        "Re-validating selected rows before saving...",
+        "working",
+      );
 
       const selectedPayload = selectedRows.map((row) => ({
         rowNumber: row.rowNumber,
@@ -599,7 +741,9 @@ function BulkUploadSection() {
       const revalidated = await requestBulkValidation(selectedPayload);
 
       if (revalidated.summary.invalidRows > 0) {
-        setReviewRows((prev) => mergeImportedValidation(prev, revalidated.rows));
+        setReviewRows((prev) =>
+          mergeImportedValidation(prev, revalidated.rows),
+        );
         updateStatus(
           "review",
           "Some selected rows are no longer valid. Review the flagged rows and try again.",
@@ -625,10 +769,9 @@ function BulkUploadSection() {
 
         const res = await fetch(`${apiURL}/prints/bulk/import`, {
           method: "POST",
-          credentials: "include",
-          headers: {
+          headers: buildAuthHeaders({
             "Content-Type": "application/json",
-          },
+          }),
           body: JSON.stringify({ rows: batch }),
         });
 
@@ -659,7 +802,11 @@ function BulkUploadSection() {
       setReviewRows([]);
       setValidationSummary(null);
       setParserWarnings([]);
-      updateStatus("complete", `Imported ${selectedRows.length} print record(s) successfully.`, "success");
+      updateStatus(
+        "complete",
+        `Imported ${selectedRows.length} print record(s) successfully.`,
+        "success",
+      );
     } catch (error) {
       updateStatus("error", error.message || "Bulk import failed.", "error");
     } finally {
@@ -673,7 +820,9 @@ function BulkUploadSection() {
       <p>{MODE_CONFIG[uploadMode].helperText}</p>
 
       <div className="bulk-upload-card">
-        <label htmlFor="bulk-upload-mode"><b>Upload Type</b></label>
+        <label htmlFor="bulk-upload-mode">
+          <b>Upload Type</b>
+        </label>
         <select
           id="bulk-upload-mode"
           className="bulk-upload-mode-select"
@@ -685,7 +834,9 @@ function BulkUploadSection() {
           <option value="certificates">Certificates</option>
         </select>
 
-        <label htmlFor="bulk-upload-file"><b>{MODE_CONFIG[uploadMode].inputLabel}</b></label>
+        <label htmlFor="bulk-upload-file">
+          <b>{MODE_CONFIG[uploadMode].inputLabel}</b>
+        </label>
         {uploadMode === "records" ? (
           <input
             id="bulk-upload-file"
@@ -745,8 +896,14 @@ function BulkUploadSection() {
             className="btn btn-dark"
             disabled={
               uploadMode !== "certificates"
-                ? !reviewRows.length || !selectedRowCount || isValidating || isImporting
-                : !assetReviewRows.length || !selectedAssetCount || isValidating || isImporting
+                ? !reviewRows.length ||
+                  !selectedRowCount ||
+                  isValidating ||
+                  isImporting
+                : !assetReviewRows.length ||
+                  !selectedAssetCount ||
+                  isValidating ||
+                  isImporting
             }
             onClick={handleImportRows}
           >

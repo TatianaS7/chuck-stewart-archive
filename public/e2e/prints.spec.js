@@ -1,7 +1,31 @@
 // @ts-check
 import { test, expect } from '@playwright/test';
+import { TEST_EMAIL, TEST_PASSWORD } from './testCredentials.js';
 
 test.use({ storageState: './e2e/.auth/state.json' });
+
+const API = 'http://localhost:8000/api';
+
+async function getAuthToken(request) {
+  await request.post(`${API}/auth`, {
+    data: {
+      first_name: 'E2E',
+      last_name: 'Test',
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+    },
+  });
+
+  const loginRes = await request.post(`${API}/auth/login`, {
+    data: {
+      email: TEST_EMAIL,
+      password: TEST_PASSWORD,
+    },
+  });
+
+  const payload = await loginRes.json();
+  return payload.token;
+}
 
 // These tests run with a pre-authenticated browser context (saved by globalSetup).
 // The app loads directly into the prints view — no login step needed.
@@ -144,8 +168,11 @@ test.describe('Prints view - Add Print form', () => {
     });
 
     // Clean up: delete the test print via API
-    await request.delete(
-      `http://localhost:8000/api/prints/${encodeURIComponent(catalog)}`,
-    );
+    const token = await getAuthToken(request);
+    await request.delete(`${API}/prints/${encodeURIComponent(catalog)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   });
 });

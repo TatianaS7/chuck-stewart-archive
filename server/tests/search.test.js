@@ -5,14 +5,41 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 const require = createRequire(import.meta.url);
 const app = require("../src/app");
 const Print = require("../models/print");
+const User = require("../models/user");
 const { db } = require("../db/connection");
 
 const createdCatalogs = new Set();
+const createdEmails = new Set();
 
 function uniqueCatalog(prefix) {
   const value = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
   createdCatalogs.add(value);
   return value;
+}
+
+function uniqueEmail(prefix) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}@test.com`;
+}
+
+async function getAuthToken() {
+  const email = uniqueEmail("search");
+  const password = "TestPassword123!";
+  createdEmails.add(email);
+
+  await request(app).post("/api/auth").send({
+    first_name: "Search",
+    last_name: "Tester",
+    email,
+    password,
+  });
+
+  const login = await request(app).post("/api/auth/login").send({
+    email,
+    password,
+  });
+
+  expect(login.status).toBe(200);
+  return login.body.token;
 }
 
 async function seedPrint(overrides = {}) {
@@ -47,23 +74,34 @@ describe("Search endpoints", () => {
   });
 
   afterEach(async () => {
-    if (!createdCatalogs.size) return;
+    if (createdCatalogs.size) {
+      await Print.destroy({
+        where: {
+          catalog_number: [...createdCatalogs],
+        },
+      });
 
-    await Print.destroy({
-      where: {
-        catalog_number: [...createdCatalogs],
-      },
-    });
+      createdCatalogs.clear();
+    }
 
-    createdCatalogs.clear();
+    if (createdEmails.size) {
+      await User.destroy({
+        where: {
+          email: [...createdEmails],
+        },
+      });
+
+      createdEmails.clear();
+    }
   });
 
   it("GET /api/search finds a print by exact catalog number", async () => {
     const created = await seedPrint();
+    const token = await getAuthToken();
 
-    const response = await request(app).get(
-      `/api/search?query=${encodeURIComponent(created.catalog_number)}`,
-    );
+    const response = await request(app)
+      .get(`/api/search?query=${encodeURIComponent(created.catalog_number)}`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.count).toBeGreaterThan(0);
@@ -79,8 +117,11 @@ describe("Search endpoints", () => {
     const created = await seedPrint({
       artist: "John Searchington Quartet",
     });
+    const token = await getAuthToken();
 
-    const response = await request(app).get("/api/search?query=Searchington");
+    const response = await request(app)
+      .get("/api/search?query=Searchington")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.count).toBeGreaterThan(0);
@@ -92,9 +133,13 @@ describe("Search endpoints", () => {
   });
 
   it("GET /api/search returns 404 when no prints match", async () => {
-    const response = await request(app).get(
-      `/api/search?query=${encodeURIComponent("NO_MATCH_EXPECTED_123456")}`,
-    );
+    const token = await getAuthToken();
+
+    const response = await request(app)
+      .get(
+        `/api/search?query=${encodeURIComponent("NO_MATCH_EXPECTED_123456")}`,
+      )
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(404);
     expect(response.body.error).toBe("No Prints Found.");
