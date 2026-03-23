@@ -6,6 +6,7 @@ const session = require('express-session');
 require('dotenv').config();
 
 const printsRouter = require('../routes/prints');
+const bulkUploadRouter = require('../routes/bulkUpload');
 const authRouter = require('../routes/auth');
 const searchRouter = require('../routes/search');
 
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true})); // For parsing ap
 
 
 app.use('/api/prints', printsRouter);
+app.use('/api/prints', bulkUploadRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/search', searchRouter);
 
