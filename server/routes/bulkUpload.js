@@ -6,6 +6,7 @@ const Print = require("../models/print");
 const PrintChangeLog = require("../models/printChangeLog");
 const { uploadToAzure } = require("../azure-blob");
 const { requireAuth } = require("../middleware/requireAuth");
+const { convertWordToPdfDataUrl } = require("../utils/certificate-converter");
 
 const router = express.Router();
 router.use(requireAuth);
@@ -488,7 +489,9 @@ async function validateBulkAssetFiles(assetType, files = []) {
 
     if (assetType === "certificates") {
       if (WORD_EXTENSIONS.includes(fileExtension)) {
-        issues.push("Word files must be converted to PDF before upload.");
+        reviewNotes.push(
+          "Word certificate will be converted to PDF automatically during upload.",
+        );
       } else if (fileExtension !== "pdf") {
         issues.push("Certificate files must be PDF.");
       }
@@ -527,7 +530,9 @@ async function validateBulkAssetFiles(assetType, files = []) {
     row.issues.some((issue) => issue.includes("already has")),
   ).length;
   const conversionRequired = rows.filter((row) =>
-    row.issues.includes("Word files must be converted to PDF before upload."),
+    row.reviewNotes?.includes(
+      "Word certificate will be converted to PDF automatically during upload.",
+    ),
   ).length;
   const reviewFlaggedFiles = rows.filter(
     (row) => row.reviewNotes?.length,
@@ -841,11 +846,22 @@ router.post("/bulk/assets/import", async (req, res, next) => {
       }
 
       if (assetType === "certificates") {
-        const certificateBlobName = `cert-${catalogNumber}-${uuidv4()}.${ext}`;
+        let certificateContent = file.content;
+        let certificateExtension = ext;
+
+        if (WORD_EXTENSIONS.includes(ext)) {
+          certificateContent = await convertWordToPdfDataUrl({
+            fileName: file.fileName || file.name,
+            content: file.content,
+          });
+          certificateExtension = "pdf";
+        }
+
+        const certificateBlobName = `cert-${catalogNumber}-${uuidv4()}.${certificateExtension}`;
         const certificateUrl = await uploadToAzure(
           CERTIFICATE_CONTAINER,
           certificateBlobName,
-          file.content,
+          certificateContent,
         );
 
         await print.update({

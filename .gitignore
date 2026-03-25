@@ -1,6 +1,7 @@
 Sample Uploads/
 .parcel-cache/
 .venv/
+.deploy-cache/
 
 db.sqlite
 

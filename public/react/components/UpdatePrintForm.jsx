@@ -30,6 +30,7 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
         setUpdatedData((prevData) => ({
           ...prevData,
           [name]: reader.result,
+          ...(name === "certificate" ? { certificateFileName: file.name } : {}),
         }));
       };
       reader.readAsDataURL(file);
@@ -60,6 +61,10 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
       removeCertificate: certificateAction === "remove",
       certificate:
         certificateAction === "replace" ? updatedData.certificate : undefined,
+      certificateFileName:
+        certificateAction === "replace"
+          ? updatedData.certificateFileName
+          : undefined,
     };
     await updatePrint(updatedData.catalog_number, payload);
     setShow(false);
@@ -166,9 +171,12 @@ function UpdatePrintForm({ allPrintsClick, updatePrint, fetchPrints }) {
             type="file"
             id="certificate"
             name="certificate"
-            accept=".pdf,image/*"
+            accept=".pdf,.doc,.docx,image/*"
             onChange={handleFormChange}
           ></input>
+          <p style={{ color: "gray", marginTop: "0.5em", marginBottom: 0 }}>
+            DOC/DOCX files are converted to PDF automatically.
+          </p>
           <br />
           <button
             type="button"

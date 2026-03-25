@@ -53,6 +53,10 @@ export const AppProvider = ({ children }) => {
 
   const [currentPrint, setCurrentPrint] = useState(null);
 
+  function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   useEffect(() => {
     const savedSession = localStorage.getItem(SESSION_KEY);
 
@@ -215,27 +219,48 @@ export const AppProvider = ({ children }) => {
   }
 
   // Fetch All Prints Function
-  async function fetchPrints() {
-    try {
-      const res = await fetch(`${apiURL}/prints/all`, {
-        headers: buildAuthHeaders(),
-      });
-      const printData = await res.json();
+  async function fetchPrints({ maxAttempts = 1, retryDelayMs = 400 } = {}) {
+    if (!getAuthToken()) return;
 
-      if (!printData) {
-        throw new Error("Error fetching prints");
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      try {
+        const res = await fetch(`${apiURL}/prints/all`, {
+          headers: buildAuthHeaders(),
+        });
+
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            return;
+          }
+
+          throw new Error(`Failed to fetch prints (status ${res.status})`);
+        }
+
+        const printData = await res.json();
+        if (!printData || !Array.isArray(printData.allPrints)) {
+          throw new Error("Error fetching prints");
+        }
+
+        setAllPrints(printData.allPrints);
+        setPrintCount(printData.count);
+        return;
+      } catch (error) {
+        if (attempt === maxAttempts) {
+          console.error("Error fetching prints", error);
+          return;
+        }
+
+        await wait(retryDelayMs);
       }
-      // console.log(printData);
-      setAllPrints(printData.allPrints);
-      setPrintCount(printData.count);
-    } catch (error) {
-      console.error("Error fetching prints", error);
     }
   }
 
   useEffect(() => {
-    fetchPrints();
-  }, []);
+    if (!isSignedIn) return;
+
+    // API startup can lag behind Vite startup; retry briefly on initial load.
+    fetchPrints({ maxAttempts: 8, retryDelayMs: 500 });
+  }, [isSignedIn]);
 
   // Add New Print Function
   async function addPrint() {

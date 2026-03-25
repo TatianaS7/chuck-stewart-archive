@@ -8,6 +8,7 @@ const { Op } = require("sequelize");
 const { uploadToAzure, deleteBlob, generateSasUrl } = require("../azure-blob");
 const { v4: uuidv4 } = require("uuid");
 const { requireAuth } = require("../middleware/requireAuth");
+const { convertWordToPdfDataUrl } = require("../utils/certificate-converter");
 
 function resolveContainer(size) {
   const map = {
@@ -19,6 +20,16 @@ function resolveContainer(size) {
 }
 
 const CERTIFICATE_CONTAINER = "print-certificates";
+
+function isWordDataUrl(value = "") {
+  return (
+    typeof value === "string" &&
+    (value.startsWith("data:application/msword") ||
+      value.startsWith(
+        "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ))
+  );
+}
 
 function getBlobExtension(base64Data) {
   if (base64Data.startsWith("data:application/pdf")) return "pdf";
@@ -343,12 +354,24 @@ router.put("/update/:catalogNumber", async (req, res, next) => {
       certificateUrl = null;
       certificateBlobName = null;
     } else if (isNewCertificate) {
-      const certExt = getBlobExtension(req.body.certificate);
+      let certificateContent = req.body.certificate;
+      let certExt = getBlobExtension(certificateContent);
+
+      if (isWordDataUrl(certificateContent)) {
+        certificateContent = await convertWordToPdfDataUrl({
+          fileName:
+            req.body.certificateFileName ||
+            `${print.catalog_number || "certificate"}.docx`,
+          content: certificateContent,
+        });
+        certExt = "pdf";
+      }
+
       const newCertificateBlobName = `cert-${uuidv4()}.${certExt}`;
       certificateUrl = await uploadToAzure(
         CERTIFICATE_CONTAINER,
         newCertificateBlobName,
-        req.body.certificate,
+        certificateContent,
       );
       certificateBlobName = newCertificateBlobName;
 

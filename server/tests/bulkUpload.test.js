@@ -287,6 +287,32 @@ describe("Bulk upload endpoints", () => {
     expect(response.body).toHaveProperty("summary");
   });
 
+  it("POST /api/prints/bulk/assets/validate accepts Word certificates for conversion", async () => {
+    const testCatalog = uniqueCatalog("cert-docx-validate");
+    createdCatalogs.add(testCatalog);
+    const token = await getAuthToken();
+
+    await seedPrint({ catalog_number: testCatalog });
+
+    const response = await request(app)
+      .post("/api/prints/bulk/assets/validate")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        assetType: "certificates",
+        files: [
+          {
+            fileName: `${testCatalog}.docx`,
+            content:
+              "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEsDBBQAAAAIA",
+          },
+        ],
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.rows[0].canImport).toBe(true);
+    expect(response.body.summary.conversionRequired).toBe(1);
+  });
+
   it("POST /api/prints/bulk/import returns 400 with empty rows", async () => {
     const token = await getAuthToken();
     const response = await request(app)

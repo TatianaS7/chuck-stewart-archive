@@ -861,7 +861,7 @@ function BulkUploadSection() {
             ? "Suggested columns: catalog_number, artist, status, date, size, location, instrument, notes, date_sold"
             : uploadMode === "images"
               ? "Image filenames are parsed into the same fields as New Print. Review and correct every row, especially size, before upload."
-              : "Certificate filenames can include artist name, year, catalog number, paper type, and sometimes size. Use PDFs when possible; Word files must be converted before upload."}
+                : "Certificate filenames can include artist name, year, catalog number, paper type, and sometimes size. Use PDFs when possible; DOC/DOCX files will be converted automatically during upload."}
         </p>
 
         <BulkUploadStatusPanel statusInfo={statusInfo} />
